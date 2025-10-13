@@ -9,6 +9,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 option(BUILD_CORE "Build the core game engine" ON)
+option(BUILD_PROTOCOL "Build the network protocol" ON)
 option(BUILD_SERVER "Build the server" OFF)
 option(BUILD_CLIENT "Build the client" OFF)
 option(BUILD_AI "Build the AI module" OFF)
@@ -30,7 +31,7 @@ if(BUILD_CORE)
     add_subdirectory(core)
 endif()
 
-if(BUILD_SERVER OR BUILD_CLIENT)
+if(BUILD_PROTOCOL)
     add_subdirectory(protocol)
 endif()
 
