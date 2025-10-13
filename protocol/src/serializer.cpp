@@ -348,7 +348,7 @@ bool MessageSerializer::isValidJson(const std::string &json_str)
 {
     try
     {
-        json::parse(json_str);
+        [[maybe_unused]] auto j = json::parse(json_str);
         return true;
     }
     catch (const json::parse_error &)

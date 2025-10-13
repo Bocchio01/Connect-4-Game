@@ -3,6 +3,10 @@
 #include <cstdint>
 #include <string>
 
+#ifdef ERROR
+#undef ERROR
+#endif
+
 /**
  * All possible message types in the protocol
  */
