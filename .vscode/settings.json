@@ -1,9 +1,13 @@
 {
+    "workbench.tree.indent": 40,
+    "C_Cpp.autoAddFileAssociations": false,
     "files.associations": {
-        "stdbool.h": "c",
-        "getopt.h": "c",
-        "string.h": "c",
-        "board.h": "c",
-        "utils.h": "c"
-    }
+        "Doxyfile": "shellscript",
+        "Doxyfile.in": "shellscript"
+    },
+    "cmake.sourceDirectory": [
+        "${workspaceFolder}",
+        // "${workspaceFolder}/core",
+        // "${workspaceFolder}/tests"
+    ]
 }

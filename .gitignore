@@ -1,4 +1,5 @@
-**/_*
+**/.locals
+**/build
 
 # Prerequisites
 *.d

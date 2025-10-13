@@ -1,9 +1,9 @@
-# Connect_4_Game
+# Connect-4-Game
 
 This is **a (not so basic) 'Connect 4 Game' implementation**, developed during high school using basic concepts of C and then improved during my free time.
 
-![Initial board screenshot](Img/Initial_Screen.png)
-![Winning board screenshot](Img/Winning_Screen.png)
+![Initial board screenshot](docs/Initial_Screen.png)
+![Winning board screenshot](docs/Winning_Screen.png)
 
 ## How to play
 
@@ -22,7 +22,7 @@ You need to have the GCC compiler installed on your machine and a copy of the <g
 To compile the game, simply run the following command:
 
 ```shell
-gcc Main.c board.c setup.c utils.c -o Connect_4_Game.exe
+gcc Main.c board.c setup.c utils.c -o Connect4Game.exe
 ```
 
 ## How to run
@@ -30,7 +30,7 @@ gcc Main.c board.c setup.c utils.c -o Connect_4_Game.exe
 To run the game, simply run the following command:
 
 ```shell
-./Connect_4_Game
+./Connect4Game
 ```
 
 ### Options / Personalizations
@@ -45,7 +45,7 @@ The game has some options that can be used to personalize the game.
 Here is an example of how to use the options set to the deafult values:
 
 ```shell
-./Connect_4_Game -b 6x7 -p 2 -w 4
+./Connect4Game -b 6x7 -p 2 -w 4
 ```
 
 ## Improvements / pull requests

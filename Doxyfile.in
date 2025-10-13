@@ -1,0 +1,36 @@
+# ========================================================
+#  Doxygen template for Connect 4 project
+# ========================================================
+
+PROJECT_NAME           = "Connect 4 Game"
+PROJECT_NUMBER         = "@PROJECT_VERSION@"
+OUTPUT_DIRECTORY       = "@CMAKE_BINARY_DIR@/docs"
+GENERATE_LATEX         = NO
+GENERATE_HTML          = YES
+HTML_OUTPUT            = html
+QUIET                  = YES
+
+# Collect all include and src folders from modules
+INPUT                  = \
+  @CMAKE_SOURCE_DIR@/core/include \
+  @CMAKE_SOURCE_DIR@/core/src \
+  @CMAKE_SOURCE_DIR@/ai/include \
+  @CMAKE_SOURCE_DIR@/ai/src \
+  @CMAKE_SOURCE_DIR@/server/include \
+  @CMAKE_SOURCE_DIR@/server/src \
+  @CMAKE_SOURCE_DIR@/client/include \
+  @CMAKE_SOURCE_DIR@/client/src \
+  @CMAKE_SOURCE_DIR@/protocol/include
+
+FILE_PATTERNS          = *.h *.hpp *.cpp
+RECURSIVE              = YES
+
+# Doxygen layout and style
+EXTRACT_ALL            = YES
+EXTRACT_PRIVATE        = NO
+GENERATE_TREEVIEW      = YES
+FULL_PATH_NAMES        = NO
+
+# Treat warnings properly
+WARN_IF_UNDOCUMENTED   = YES
+WARN_NO_PARAMDOC       = YES
