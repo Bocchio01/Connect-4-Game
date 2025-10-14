@@ -1,21 +1,17 @@
-// ============================================================================
-// test_protocol.cpp - Tests for protocol serialization
-// ============================================================================
-
 #include <iostream>
 #include <cassert>
 #include "protocol/protocol.hpp"
 
 void test_connect_request()
 {
-    std::cout << "Testing ConnectRequest serialization..." << std::endl;
+    std::cout << "Testing ConnectRequest serialization...";
 
     ConnectRequest req("Alice");
     req.protocol_version = Protocol::VERSION;
 
     // Serialize
     std::string json = MessageSerializer::serialize(req);
-    std::cout << "  Serialized: " << json << std::endl;
+    std::cout << " Serialized: " << json << " ";
 
     // Deserialize
     ConnectRequest deserialized = MessageSerializer::deserializeConnectRequest(json);
@@ -23,12 +19,12 @@ void test_connect_request()
     assert(deserialized.protocol_version == req.protocol_version);
     assert(deserialized.player_name == req.player_name);
 
-    std::cout << "  ✓ ConnectRequest test passed" << std::endl;
+    std::cout << "passed" << std::endl;
 }
 
 void test_connect_response()
 {
-    std::cout << "Testing ConnectResponse serialization..." << std::endl;
+    std::cout << "Testing ConnectResponse serialization...";
 
     ConnectResponse resp;
     resp.success = true;
@@ -39,7 +35,7 @@ void test_connect_response()
 
     // Serialize
     std::string json = MessageSerializer::serialize(resp);
-    std::cout << "  Serialized: " << json << std::endl;
+    std::cout << " Serialized: " << json << " ";
 
     // Deserialize
     ConnectResponse deserialized = MessageSerializer::deserializeConnectResponse(json);
@@ -50,18 +46,18 @@ void test_connect_response()
     assert(deserialized.session_token == resp.session_token);
     assert(deserialized.message == resp.message);
 
-    std::cout << "  ✓ ConnectResponse test passed" << std::endl;
+    std::cout << "passed" << std::endl;
 }
 
 void test_make_move_request()
 {
-    std::cout << "Testing MakeMoveRequest serialization..." << std::endl;
+    std::cout << "Testing MakeMoveRequest serialization...";
 
     MakeMoveRequest req("token123", 3);
 
     // Serialize
     std::string json = MessageSerializer::serialize(req);
-    std::cout << "  Serialized: " << json << std::endl;
+    std::cout << " Serialized: " << json << " ";
 
     // Deserialize
     MakeMoveRequest deserialized = MessageSerializer::deserializeMakeMoveRequest(json);
@@ -69,12 +65,12 @@ void test_make_move_request()
     assert(deserialized.session_token == req.session_token);
     assert(deserialized.column == req.column);
 
-    std::cout << "  ✓ MakeMoveRequest test passed" << std::endl;
+    std::cout << "passed" << std::endl;
 }
 
 void test_game_state_update()
 {
-    std::cout << "Testing GameStateUpdate serialization..." << std::endl;
+    std::cout << "Testing GameStateUpdate serialization...";
 
     GameStateUpdate update;
     update.game_id = 42;
@@ -95,7 +91,7 @@ void test_game_state_update()
 
     // Serialize
     std::string json = MessageSerializer::serialize(update);
-    std::cout << "  Serialized (truncated): " << json.substr(0, 100) << "..." << std::endl;
+    std::cout << "  Serialized (truncated): " << json.substr(0, 100) << "...";
 
     // Deserialize
     GameStateUpdate deserialized = MessageSerializer::deserializeGameStateUpdate(json);
@@ -109,12 +105,12 @@ void test_game_state_update()
     assert(deserialized.players.size() == 2);
     assert(deserialized.board[5][3] == 1);
 
-    std::cout << "  ✓ GameStateUpdate test passed" << std::endl;
+    std::cout << "passed" << std::endl;
 }
 
 void test_game_over_message()
 {
-    std::cout << "Testing GameOverMessage serialization..." << std::endl;
+    std::cout << "Testing GameOverMessage serialization...";
 
     GameOverMessage msg;
     msg.game_id = 42;
@@ -124,7 +120,7 @@ void test_game_over_message()
 
     // Serialize
     std::string json = MessageSerializer::serialize(msg);
-    std::cout << "  Serialized: " << json << std::endl;
+    std::cout << " Serialized: " << json << " ";
 
     // Deserialize
     GameOverMessage deserialized = MessageSerializer::deserializeGameOver(json);
@@ -135,18 +131,18 @@ void test_game_over_message()
     assert(deserialized.winner.value() == 1);
     assert(deserialized.message == msg.message);
 
-    std::cout << "  ✓ GameOverMessage test passed" << std::endl;
+    std::cout << "passed" << std::endl;
 }
 
 void test_error_message()
 {
-    std::cout << "Testing ErrorMessage serialization..." << std::endl;
+    std::cout << "Testing ErrorMessage serialization...";
 
     ErrorMessage err(Protocol::ErrorCode::INVALID_MOVE, "Column is full");
 
     // Serialize
     std::string json = MessageSerializer::serialize(err);
-    std::cout << "  Serialized: " << json << std::endl;
+    std::cout << " Serialized: " << json << " ";
 
     // Deserialize
     ErrorMessage deserialized = MessageSerializer::deserializeError(json);
@@ -154,12 +150,12 @@ void test_error_message()
     assert(deserialized.error_code == err.error_code);
     assert(deserialized.error_message == err.error_message);
 
-    std::cout << "  ✓ ErrorMessage test passed" << std::endl;
+    std::cout << "passed" << std::endl;
 }
 
 void test_message_wrapping()
 {
-    std::cout << "Testing message wrapping..." << std::endl;
+    std::cout << "Testing message wrapping...";
 
     // Create a move request
     MakeMoveRequest req("token", 5);
@@ -179,12 +175,12 @@ void test_message_wrapping()
     assert(deserialized.session_token == req.session_token);
     assert(deserialized.column == req.column);
 
-    std::cout << "  ✓ Message wrapping test passed" << std::endl;
+    std::cout << "passed" << std::endl;
 }
 
 void test_create_game_request()
 {
-    std::cout << "Testing CreateGameRequest serialization..." << std::endl;
+    std::cout << "Testing CreateGameRequest serialization...";
 
     CreateGameRequest req;
     req.session_token = "token123";
@@ -192,7 +188,7 @@ void test_create_game_request()
 
     // Serialize
     std::string json = MessageSerializer::serialize(req);
-    std::cout << "  Serialized: " << json << std::endl;
+    std::cout << " Serialized: " << json << " ";
 
     // Deserialize
     CreateGameRequest deserialized = MessageSerializer::deserializeCreateGameRequest(json);
@@ -203,12 +199,12 @@ void test_create_game_request()
     assert(deserialized.config.num_players == 3);
     assert(deserialized.config.connect_length == 5);
 
-    std::cout << "  ✓ CreateGameRequest test passed" << std::endl;
+    std::cout << "passed" << std::endl;
 }
 
 void test_game_list_response()
 {
-    std::cout << "Testing GameListResponse serialization..." << std::endl;
+    std::cout << "Testing GameListResponse serialization...";
 
     GameListResponse resp;
 
@@ -231,7 +227,7 @@ void test_game_list_response()
 
     // Serialize
     std::string json = MessageSerializer::serialize(resp);
-    std::cout << "  Serialized (truncated): " << json.substr(0, 150) << "..." << std::endl;
+    std::cout << "  Serialized (truncated): " << json.substr(0, 150) << "...";
 
     // Deserialize
     GameListResponse deserialized = MessageSerializer::deserializeGameListResponse(json);
@@ -242,12 +238,12 @@ void test_game_list_response()
     assert(deserialized.games[1].game_id == 2);
     assert(deserialized.games[1].status == ProtocolGameStatus::IN_PROGRESS);
 
-    std::cout << "  ✓ GameListResponse test passed" << std::endl;
+    std::cout << "passed" << std::endl;
 }
 
 void test_validation()
 {
-    std::cout << "Testing validation functions..." << std::endl;
+    std::cout << "Testing validation functions...";
 
     // Valid JSON
     std::string valid = R"({"key": "value"})";
@@ -265,24 +261,24 @@ void test_validation()
     std::string large(Protocol::MAX_MESSAGE_SIZE + 1, 'x');
     assert(!MessageSerializer::isValidMessageSize(large));
 
-    std::cout << "  ✓ Validation test passed" << std::endl;
+    std::cout << "passed" << std::endl;
 }
 
 void test_message_type_to_string()
 {
-    std::cout << "Testing messageTypeToString..." << std::endl;
+    std::cout << "Testing messageTypeToString...";
 
     assert(messageTypeToString(MessageType::CONNECT_REQUEST) == "CONNECT_REQUEST");
     assert(messageTypeToString(MessageType::MAKE_MOVE) == "MAKE_MOVE");
     assert(messageTypeToString(MessageType::ERROR) == "ERROR");
     assert(messageTypeToString(MessageType::GAME_OVER) == "GAME_OVER");
 
-    std::cout << "  ✓ MessageType to string test passed" << std::endl;
+    std::cout << "passed" << std::endl;
 }
 
 void test_full_message_flow()
 {
-    std::cout << "Testing full message flow (client → server simulation)..." << std::endl;
+    std::cout << "Testing full message flow (client -> server simulation)...";
 
     // 1. Client creates connect request
     ConnectRequest connectReq("TestPlayer");
@@ -311,7 +307,7 @@ void test_full_message_flow()
     std::string respWrapped = MessageSerializer::wrapMessage(
         MessageType::CONNECT_RESPONSE, respPayload);
 
-    std::cout << "  Server responds: " << respWrapped.substr(0, 100) << "..." << std::endl;
+    std::cout << "  Server responds: " << respWrapped.substr(0, 100) << "...";
 
     // 4. Client receives response
     auto [respType, respRecvPayload] = MessageSerializer::unwrapMessage(respWrapped);
@@ -338,7 +334,7 @@ void test_full_message_flow()
     assert(serverRecvMove.session_token == "secure_token_123");
     assert(serverRecvMove.column == 3);
 
-    std::cout << "  ✓ Full message flow test passed" << std::endl;
+    std::cout << "passed" << std::endl;
 }
 
 int main()
@@ -364,12 +360,12 @@ int main()
         test_message_type_to_string();
         test_full_message_flow();
 
-        std::cout << "\n✓ All Protocol tests passed!" << std::endl;
+        std::cout << "\n=== All Protocol tests passed! ===" << std::endl;
         return 0;
     }
     catch (const std::exception &e)
     {
-        std::cerr << "\n✗ Test failed with exception: " << e.what() << std::endl;
+        std::cerr << "\nTest failed with exception: " << e.what() << std::endl;
         return 1;
     }
 }

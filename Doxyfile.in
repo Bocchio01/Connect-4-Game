@@ -14,13 +14,10 @@ QUIET                  = YES
 INPUT                  = \
   @CMAKE_SOURCE_DIR@/core/include \
   @CMAKE_SOURCE_DIR@/core/src \
-  @CMAKE_SOURCE_DIR@/ai/include \
-  @CMAKE_SOURCE_DIR@/ai/src \
-  @CMAKE_SOURCE_DIR@/server/include \
-  @CMAKE_SOURCE_DIR@/server/src \
-  @CMAKE_SOURCE_DIR@/client/include \
-  @CMAKE_SOURCE_DIR@/client/src \
-  @CMAKE_SOURCE_DIR@/protocol/include
+  @CMAKE_SOURCE_DIR@/network/protocol/include \
+  @CMAKE_SOURCE_DIR@/network/protocol/src \
+  @CMAKE_SOURCE_DIR@/network/server/include \
+  @CMAKE_SOURCE_DIR@/network/server/src \
 
 FILE_PATTERNS          = *.h *.hpp *.cpp
 RECURSIVE              = YES

@@ -10,12 +10,12 @@ FetchContent_Declare(
 FetchContent_MakeAvailable(sockpp)
 
 # Disable warnings for sockpp target
-if(TARGET sockpp)
-    target_compile_options(sockpp PRIVATE
+if(TARGET sockpp-objs)
+    target_compile_options(sockpp-objs PRIVATE
         $<$<CXX_COMPILER_ID:MSVC>:/w>
         $<$<NOT:$<CXX_COMPILER_ID:MSVC>>:-w>
     )
-    set_target_properties(sockpp PROPERTIES
+    set_target_properties(sockpp-objs PROPERTIES
         CXX_CLANG_TIDY ""
         CXX_CPPCHECK ""
     )

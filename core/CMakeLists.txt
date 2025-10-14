@@ -72,20 +72,3 @@ if(INSTALL_CORE)
         DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/Connect4Core
     )
 endif()
-
-# ---------------------------------------------------------
-# Optional example executables (optional, controlled by parent)
-# ---------------------------------------------------------
-if(BUILD_EXAMPLES)
-    file(GLOB EXAMPLE_SOURCES examples/*.cpp)
-
-    foreach(example_src ${EXAMPLE_SOURCES})
-        get_filename_component(example_name ${example_src} NAME_WE)
-        add_executable(${example_name} ${example_src})
-        target_link_libraries(${example_name} PRIVATE connect4_core)
-        target_include_directories(${example_name}
-            PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/include
-        )
-        message(STATUS "Added example: ${example_name}")
-    endforeach()
-endif()
