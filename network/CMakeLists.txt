@@ -12,6 +12,5 @@ target_link_libraries(connect4_network
     INTERFACE
     Connect4::protocol
     Connect4::server_lib
-
-    # Connect4::client_lib
+    Connect4::client
 )

@@ -27,6 +27,12 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
+# if(MSVC)
+# add_compile_options(/W4)
+# else()
+# add_compile_options(-Wall -Wextra -Wpedantic)
+# endif()
+
 # =========================================================
 # Prevent in-source builds
 # =========================================================
@@ -80,13 +86,13 @@ endif()
 # CLI client (depends on core and network)
 if(BUILD_CLI)
     message(STATUS "Adding CLI client...")
-    add_subdirectory(cli)
+    add_subdirectory(ui/cli)
 endif()
 
 # GUI client (depends on core and network)
 if(BUILD_GUI)
     message(STATUS "Adding GUI client...")
-    add_subdirectory(gui)
+    add_subdirectory(ui/gui)
 endif()
 
 # =========================================================

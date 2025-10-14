@@ -1,15 +1,4 @@
 # ---------------------------------------------------------
-# Fetch sockpp library
-# ---------------------------------------------------------
-include(FetchContent)
-FetchContent_Declare(
-    sockpp
-    GIT_REPOSITORY https://github.com/fpagliughi/sockpp.git
-    GIT_TAG v0.8.3
-)
-FetchContent_MakeAvailable(sockpp)
-
-# ---------------------------------------------------------
 # Client executable
 # ---------------------------------------------------------
 add_executable(connect4_cli
@@ -18,13 +7,9 @@ add_executable(connect4_cli
 
 target_link_libraries(connect4_cli
     PRIVATE
-    Connect4::protocol
-    sockpp
+    Connect4::core
+    Connect4::client
 )
-
-if(WIN32)
-    target_link_libraries(connect4_cli PRIVATE ws2_32)
-endif()
 
 # ---------------------------------------------------------
 # Warnings and options
