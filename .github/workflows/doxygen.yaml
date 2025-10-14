@@ -2,7 +2,7 @@ name: Generate and deploy Doxygen docs
 
 on:
   push:
-    branches: [ master ]
+    branches: [ master, v3 ]
   workflow_dispatch:
 
 jobs:

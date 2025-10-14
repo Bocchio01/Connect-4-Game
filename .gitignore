@@ -2,9 +2,9 @@
 **/build
 
 # Doxygen output
-docs/html/
-docs/latex/
-doxygen/
+docs/html
+docs/latex
+doxygen
 
 # Prerequisites
 *.d

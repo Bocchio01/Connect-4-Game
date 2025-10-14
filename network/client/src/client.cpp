@@ -112,6 +112,10 @@ void Client::run()
 void Client::stop()
 {
     running_ = false;
+    if (connected_)
+    {
+        disconnect();
+    }
 }
 
 // ============================================================================

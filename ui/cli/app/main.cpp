@@ -3,13 +3,13 @@
 
 void printBoard(const Board &board);
 void printBoard(const std::vector<std::vector<uint8_t>> &grid);
+void gameStateUpdateCallback(const GameStateUpdate &state);
 
 int main()
 {
     Client client;
 
-    client.onGameStateUpdate([](auto &state)
-                             { printBoard(state.board); });
+    client.onGameStateUpdate(gameStateUpdateCallback);
 
     client.connect("localhost", 8080);
     client.sendConnectRequest("Player");
@@ -20,10 +20,24 @@ int main()
 
     while (client.isConnected())
     {
+        if (!client.isMyTurn())
+        {
+            std::this_thread::sleep_for(std::chrono::milliseconds(100));
+            continue;
+        }
+
         int col;
+        std::cout << "Enter column to drop piece (-1 to quit): ";
         std::cin >> col;
+        if (col == -1)
+        {
+            break;
+        }
         client.sendMove(col);
     }
+
+    client.disconnect();
+    return 0;
 }
 
 void printBoard(const Board &board)
@@ -48,4 +62,10 @@ void printBoard(const std::vector<std::vector<uint8_t>> &grid)
         }
         std::cout << std::endl;
     }
+}
+
+void gameStateUpdateCallback(const GameStateUpdate &state)
+{
+    if (state.status == ProtocolGameStatus::IN_PROGRESS)
+        printBoard(state.board);
 }
