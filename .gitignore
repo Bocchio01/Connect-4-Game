@@ -1,6 +1,11 @@
 **/.locals
 **/build
 
+# Doxygen output
+docs/html/
+docs/latex/
+doxygen/
+
 # Prerequisites
 *.d
 

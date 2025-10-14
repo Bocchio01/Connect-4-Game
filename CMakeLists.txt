@@ -112,9 +112,18 @@ endif()
 find_package(Doxygen QUIET)
 
 if(DOXYGEN_FOUND AND GENERATE_DOCS)
-    set(DOXYGEN_INPUT ${CMAKE_SOURCE_DIR}/Doxyfile.in)
-    set(DOXYGEN_OUTPUT ${CMAKE_BINARY_DIR}/Doxyfile)
+    include(FetchContent)
+    FetchContent_Declare(
+        doxygen-awesome-css
+        URL https://github.com/jothepro/doxygen-awesome-css/archive/refs/heads/main.zip
+        DOWNLOAD_EXTRACT_TIMESTAMP TRUE
+    )
+    FetchContent_MakeAvailable(doxygen-awesome-css)
+    FetchContent_GetProperties(doxygen-awesome-css SOURCE_DIR AWESOME_CSS_DIR)
 
+    # Configure Doxygen
+    set(DOXYGEN_INPUT ${CMAKE_SOURCE_DIR}/docs/Doxyfile.in)
+    set(DOXYGEN_OUTPUT ${CMAKE_BINARY_DIR}/docs/Doxyfile)
     configure_file(${DOXYGEN_INPUT} ${DOXYGEN_OUTPUT} @ONLY)
 
     add_custom_target(docs
@@ -124,7 +133,6 @@ if(DOXYGEN_FOUND AND GENERATE_DOCS)
         VERBATIM
     )
 
-    message(STATUS "Doxygen documentation target available: `make docs` or `cmake --build . --target docs`")
 elseif(GENERATE_DOCS AND NOT DOXYGEN_FOUND)
     message(WARNING "Doxygen not found. Install it to enable documentation generation.")
 endif()

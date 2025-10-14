@@ -1,0 +1,36 @@
+name: Generate and deploy Doxygen docs
+
+on:
+  push:
+    branches: [ master ]
+  workflow_dispatch:
+
+jobs:
+  build-docs:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y doxygen graphviz cmake ninja-build
+
+      - name: Configure CMake
+        run: |
+          cmake -S . -B build -G Ninja -DGENERATE_DOCS=ON
+
+      - name: Build documentation target
+        run: cmake --build build --target docs --config Release -j 4
+
+      # Optional: list files to confirm where Doxygen output is located
+      - name: Show generated files
+        run: ls -R docs || true
+
+      - name: Deploy to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: docs/html
+          force_orphan: true

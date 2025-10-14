@@ -3,8 +3,10 @@
 # ========================================================
 
 PROJECT_NAME           = "Connect 4 Game"
+PROJECT_BRIEF          = "Online multiplayer Connect 4 game"
+PROJECT_LOGO           = "@CMAKE_SOURCE_DIR@/docs/logo55x55.png"
 PROJECT_NUMBER         = "@PROJECT_VERSION@"
-OUTPUT_DIRECTORY       = "@CMAKE_BINARY_DIR@/docs"
+OUTPUT_DIRECTORY       = "@CMAKE_SOURCE_DIR@/docs"
 GENERATE_LATEX         = NO
 GENERATE_HTML          = YES
 HTML_OUTPUT            = html
@@ -31,3 +33,10 @@ FULL_PATH_NAMES        = NO
 # Treat warnings properly
 WARN_IF_UNDOCUMENTED   = YES
 WARN_NO_PARAMDOC       = YES
+
+# Use Doxygen Awesome theme
+GENERATE_TREEVIEW      = YES # optional. Also works without treeview
+DISABLE_INDEX = NO
+FULL_SIDEBAR = NO
+HTML_EXTRA_STYLESHEET  = @AWESOME_CSS_DIR@/doxygen-awesome.css
+HTML_COLORSTYLE        = LIGHT # required with Doxygen >= 1.9.5

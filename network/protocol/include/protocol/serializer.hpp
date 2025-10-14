@@ -60,8 +60,7 @@ public:
     // ========================================================================
 
     /**
-     * Wraps a message with its type for transmission
-     * Format: {"type": <MessageType>, "payload": <message_json>}
+     * Converts a &lt;MessageType&gt; into a &lt;message_json&gt; object.
      */
     static std::string wrapMessage(MessageType type, const std::string &payload);
 
