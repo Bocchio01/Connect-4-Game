@@ -6,6 +6,7 @@
 #include <atomic>
 #include <mutex>
 #include <cstdint>
+#include <queue>
 #include <sockpp/tcp_acceptor.h>
 
 #include "protocol/protocol.hpp"
@@ -75,6 +76,7 @@ private:
     void broadcastGameState(uint32_t game_id);
     uint32_t createGame(uint8_t rows, uint8_t cols, uint8_t num_players,
                         uint8_t connect_length);
+    GameInfo getGameInfo(uint32_t game_id, const std::shared_ptr<GameSession> &game);
     GameStateUpdate createGameStateUpdate(const GameSession &game);
 
     uint16_t port_;
@@ -86,8 +88,8 @@ private:
     std::map<uint32_t, std::shared_ptr<GameSession>> games_;
 
     std::atomic<bool> running_;
-    std::atomic<uint32_t> next_connection_id_;
-    std::atomic<uint32_t> next_game_id_;
+    std::queue<uint32_t> free_connection_ids_;
+    std::queue<uint32_t> free_game_ids_;
 
     std::mutex connections_mutex_;
     std::mutex games_mutex_;

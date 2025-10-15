@@ -57,8 +57,6 @@ std::string MessageSerializer::serialize(const ConnectResponse &msg)
 {
     json j;
     j["success"] = msg.success;
-    j["assigned_player_id"] = msg.assigned_player_id;
-    j["game_id"] = msg.game_id;
     j["session_token"] = msg.session_token;
     j["message"] = msg.message;
     return j.dump();
@@ -69,8 +67,6 @@ ConnectResponse MessageSerializer::deserializeConnectResponse(const std::string 
     json j = json::parse(json_str);
     ConnectResponse msg;
     msg.success = j["success"];
-    msg.assigned_player_id = j["assigned_player_id"];
-    msg.game_id = j["game_id"];
     msg.session_token = j["session_token"];
     msg.message = j["message"];
     return msg;
@@ -155,6 +151,7 @@ std::string MessageSerializer::serialize(const GameStateUpdate &msg)
     j["status"] = static_cast<uint8_t>(msg.status);
     j["winner"] = optionalToJson(msg.winner);
     j["players"] = msg.players;
+    j["player_names"] = msg.player_names;
     return j.dump();
 }
 
@@ -170,6 +167,7 @@ GameStateUpdate MessageSerializer::deserializeGameStateUpdate(const std::string 
     msg.status = static_cast<ProtocolGameStatus>(j["status"].get<uint8_t>());
     msg.winner = jsonToOptional<uint8_t>(j["winner"]);
     msg.players = j["players"].get<std::vector<uint8_t>>();
+    msg.player_names = j["player_names"].get<std::vector<std::string>>();
     return msg;
 }
 
@@ -202,6 +200,7 @@ std::string MessageSerializer::serialize(const CreateGameRequest &msg)
 {
     json j;
     j["session_token"] = msg.session_token;
+    j["name"] = msg.game_name;
     j["config"]["rows"] = msg.config.rows;
     j["config"]["cols"] = msg.config.cols;
     j["config"]["num_players"] = msg.config.num_players;
@@ -214,10 +213,46 @@ CreateGameRequest MessageSerializer::deserializeCreateGameRequest(const std::str
     json j = json::parse(json_str);
     CreateGameRequest msg;
     msg.session_token = j["session_token"];
+    msg.game_name = j["name"];
     msg.config.rows = j["config"]["rows"];
     msg.config.cols = j["config"]["cols"];
     msg.config.num_players = j["config"]["num_players"];
     msg.config.connect_length = j["config"]["connect_length"];
+    return msg;
+}
+
+std::string MessageSerializer::serialize(const CreateGameResponse &msg)
+{
+    json j;
+    j["success"] = msg.success;
+    j["assigned_player_id"] = msg.assigned_player_id;
+    j["game_info"]["game_id"] = msg.game_info.game_id;
+    j["game_info"]["name"] = msg.game_info.game_name;
+    j["game_info"]["current_players"] = msg.game_info.current_players;
+    j["game_info"]["status"] = static_cast<uint8_t>(msg.game_info.status);
+    j["game_info"]["config"]["rows"] = msg.game_info.config.rows;
+    j["game_info"]["config"]["cols"] = msg.game_info.config.cols;
+    j["game_info"]["config"]["num_players"] = msg.game_info.config.num_players;
+    j["game_info"]["config"]["connect_length"] = msg.game_info.config.connect_length;
+    j["message"] = msg.message;
+    return j.dump();
+}
+
+CreateGameResponse MessageSerializer::deserializeCreateGameResponse(const std::string &json_str)
+{
+    json j = json::parse(json_str);
+    CreateGameResponse msg;
+    msg.success = j["success"];
+    msg.assigned_player_id = j["assigned_player_id"];
+    msg.game_info.game_id = j["game_info"]["game_id"];
+    msg.game_info.game_name = j["game_info"]["name"];
+    msg.game_info.current_players = j["game_info"]["current_players"];
+    msg.game_info.status = static_cast<ProtocolGameStatus>(j["game_info"]["status"].get<uint8_t>());
+    msg.game_info.config.rows = j["game_info"]["config"]["rows"];
+    msg.game_info.config.cols = j["game_info"]["config"]["cols"];
+    msg.game_info.config.num_players = j["game_info"]["config"]["num_players"];
+    msg.game_info.config.connect_length = j["game_info"]["config"]["connect_length"];
+    msg.message = j["message"];
     return msg;
 }
 
@@ -238,6 +273,41 @@ JoinGameRequest MessageSerializer::deserializeJoinGameRequest(const std::string 
     return msg;
 }
 
+std::string MessageSerializer::serialize(const JoinGameResponse &msg)
+{
+    json j;
+    j["success"] = msg.success;
+    j["assigned_player_id"] = msg.assigned_player_id;
+    j["game_info"]["game_id"] = msg.game_info.game_id;
+    j["game_info"]["name"] = msg.game_info.game_name;
+    j["game_info"]["current_players"] = msg.game_info.current_players;
+    j["game_info"]["status"] = static_cast<uint8_t>(msg.game_info.status);
+    j["game_info"]["config"]["rows"] = msg.game_info.config.rows;
+    j["game_info"]["config"]["cols"] = msg.game_info.config.cols;
+    j["game_info"]["config"]["num_players"] = msg.game_info.config.num_players;
+    j["game_info"]["config"]["connect_length"] = msg.game_info.config.connect_length;
+    j["message"] = msg.message;
+    return j.dump();
+}
+
+JoinGameResponse MessageSerializer::deserializeJoinGameResponse(const std::string &json_str)
+{
+    json j = json::parse(json_str);
+    JoinGameResponse msg;
+    msg.success = j["success"];
+    msg.assigned_player_id = j["assigned_player_id"];
+    msg.game_info.game_id = j["game_info"]["game_id"];
+    msg.game_info.game_name = j["game_info"]["name"];
+    msg.game_info.current_players = j["game_info"]["current_players"];
+    msg.game_info.status = static_cast<ProtocolGameStatus>(j["game_info"]["status"].get<uint8_t>());
+    msg.game_info.config.rows = j["game_info"]["config"]["rows"];
+    msg.game_info.config.cols = j["game_info"]["config"]["cols"];
+    msg.game_info.config.num_players = j["game_info"]["config"]["num_players"];
+    msg.game_info.config.connect_length = j["game_info"]["config"]["connect_length"];
+    msg.message = j["message"];
+    return msg;
+}
+
 std::string MessageSerializer::serialize(const ListGamesRequest &msg)
 {
     json j;
@@ -253,7 +323,7 @@ ListGamesRequest MessageSerializer::deserializeListGamesRequest(const std::strin
     return msg;
 }
 
-std::string MessageSerializer::serialize(const GameListResponse &msg)
+std::string MessageSerializer::serialize(const ListGamesResponse &msg)
 {
     json j;
     j["games"] = json::array();
@@ -263,7 +333,6 @@ std::string MessageSerializer::serialize(const GameListResponse &msg)
         json game_json;
         game_json["game_id"] = game.game_id;
         game_json["current_players"] = game.current_players;
-        game_json["max_players"] = game.max_players;
         game_json["status"] = static_cast<uint8_t>(game.status);
         game_json["config"]["rows"] = game.config.rows;
         game_json["config"]["cols"] = game.config.cols;
@@ -275,17 +344,16 @@ std::string MessageSerializer::serialize(const GameListResponse &msg)
     return j.dump();
 }
 
-GameListResponse MessageSerializer::deserializeGameListResponse(const std::string &json_str)
+ListGamesResponse MessageSerializer::deserializeGameListResponse(const std::string &json_str)
 {
     json j = json::parse(json_str);
-    GameListResponse msg;
+    ListGamesResponse msg;
 
     for (const auto &game_json : j["games"])
     {
         GameInfo game;
         game.game_id = game_json["game_id"];
         game.current_players = game_json["current_players"];
-        game.max_players = game_json["max_players"];
         game.status = static_cast<ProtocolGameStatus>(game_json["status"].get<uint8_t>());
         game.config.rows = game_json["config"]["rows"];
         game.config.cols = game_json["config"]["cols"];

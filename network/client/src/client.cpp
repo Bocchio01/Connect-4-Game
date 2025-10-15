@@ -6,8 +6,7 @@
 Client::Client()
     : connected_(false),
       running_(false),
-      player_id_(0),
-      game_id_(0)
+      player_id_(0)
 {
 }
 
@@ -142,7 +141,7 @@ bool Client::sendMove(uint8_t column)
     return sendMessage(MessageType::MAKE_MOVE, payload);
 }
 
-bool Client::sendCreateGame(const GameConfig &config)
+bool Client::sendCreateGame(const GameConfig &config, const std::string &name)
 {
     if (session_token_.empty())
     {
@@ -152,6 +151,7 @@ bool Client::sendCreateGame(const GameConfig &config)
 
     CreateGameRequest req;
     req.session_token = session_token_;
+    req.game_name = name;
     req.config = config;
 
     std::string payload = MessageSerializer::serialize(req);
@@ -278,6 +278,18 @@ void Client::processMessage(const std::string &data)
             handleConnectResponse(payload);
             break;
 
+        case MessageType::CREATE_GAME_RESPONSE:
+            handleCreateGameResponse(payload);
+            break;
+
+        case MessageType::JOIN_GAME_RESPONSE:
+            handleJoinGameResponse(payload);
+            break;
+
+        case MessageType::GAME_LIST_RESPONSE:
+            handleGameListResponse(payload);
+            break;
+
         case MessageType::GAME_STATE_UPDATE:
             handleGameStateUpdate(payload);
             break;
@@ -292,10 +304,6 @@ void Client::processMessage(const std::string &data)
 
         case MessageType::ERROR:
             handleError(payload);
-            break;
-
-        case MessageType::GAME_LIST_RESPONSE:
-            handleGameListResponse(payload);
             break;
 
         default:
@@ -322,20 +330,68 @@ void Client::handleConnectResponse(const std::string &payload)
     {
         std::lock_guard<std::mutex> lock(state_mutex_);
         session_token_ = resp.session_token;
-        player_id_ = resp.assigned_player_id;
-        game_id_ = resp.game_id;
 
-        std::cout << "[Client] Connected as Player " << (int)player_id_
-                  << " in Game " << game_id_ << std::endl;
+        std::cout << "[Client] Connected ... " << std::endl;
 
         if (connected_callback_)
         {
-            connected_callback_(player_id_, game_id_);
+            connected_callback_();
         }
     }
     else
     {
         std::cerr << "[Client] Connection failed: " << resp.message << std::endl;
+
+        if (error_callback_)
+        {
+            error_callback_(0, resp.message);
+        }
+    }
+}
+
+void Client::handleCreateGameResponse(const std::string &payload)
+{
+    CreateGameResponse resp = MessageSerializer::deserializeCreateGameResponse(payload);
+
+    if (resp.success)
+    {
+        {
+            std::lock_guard<std::mutex> lock(state_mutex_);
+            player_id_ = resp.assigned_player_id;
+            game_info_ = resp.game_info;
+        }
+
+        std::cout << "[Client] Game created with ID " << resp.game_info.game_id
+                  << ", assigned player ID " << (int)resp.assigned_player_id << std::endl;
+    }
+    else
+    {
+        std::cerr << "[Client] Create game failed: " << resp.message << std::endl;
+
+        if (error_callback_)
+        {
+            error_callback_(0, resp.message);
+        }
+    }
+}
+
+void Client::handleJoinGameResponse(const std::string &payload)
+{
+    JoinGameResponse resp = MessageSerializer::deserializeJoinGameResponse(payload);
+
+    if (resp.success)
+    {
+        {
+            std::lock_guard<std::mutex> lock(state_mutex_);
+            player_id_ = resp.assigned_player_id;
+            game_info_ = resp.game_info;
+        }
+        std::cout << "[Client] Joined game ID " << resp.game_info.game_id
+                  << ", assigned player ID " << (int)resp.assigned_player_id << std::endl;
+    }
+    else
+    {
+        std::cerr << "[Client] Join game failed: " << resp.message << std::endl;
 
         if (error_callback_)
         {
@@ -396,7 +452,7 @@ void Client::handleError(const std::string &payload)
 
 void Client::handleGameListResponse(const std::string &payload)
 {
-    GameListResponse resp = MessageSerializer::deserializeGameListResponse(payload);
+    ListGamesResponse resp = MessageSerializer::deserializeGameListResponse(payload);
 
     if (game_list_callback_)
     {

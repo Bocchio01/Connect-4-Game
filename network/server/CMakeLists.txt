@@ -1,27 +1,4 @@
 # ---------------------------------------------------------
-# Fetch sockpp library
-# ---------------------------------------------------------
-include(FetchContent)
-FetchContent_Declare(
-    sockpp
-    GIT_REPOSITORY https://github.com/fpagliughi/sockpp.git
-    GIT_TAG v0.8.3
-)
-FetchContent_MakeAvailable(sockpp)
-
-# Disable warnings for sockpp target
-if(TARGET sockpp-objs)
-    target_compile_options(sockpp-objs PRIVATE
-        $<$<CXX_COMPILER_ID:MSVC>:/w>
-        $<$<NOT:$<CXX_COMPILER_ID:MSVC>>:-w>
-    )
-    set_target_properties(sockpp-objs PROPERTIES
-        CXX_CLANG_TIDY ""
-        CXX_CPPCHECK ""
-    )
-endif()
-
-# ---------------------------------------------------------
 # Server library (for potential reuse in tests)
 # ---------------------------------------------------------
 add_library(connect4_server_lib STATIC
@@ -43,13 +20,14 @@ target_include_directories(connect4_server_lib
 )
 
 # ---------------------------------------------------------
-# Link dependencies
+# Link dependencies (sockpp and Threads are fetched/found in root)
 # ---------------------------------------------------------
 target_link_libraries(connect4_server_lib
     PUBLIC
     Connect4::core
     Connect4::protocol
     sockpp
+    Threads::Threads
 )
 
 # Platform-specific libraries
@@ -66,10 +44,12 @@ set_target_properties(connect4_server_lib PROPERTIES
     CXX_EXTENSIONS OFF
 )
 
-if(MSVC)
-    target_compile_options(connect4_server_lib PRIVATE /W4)
-else()
-    target_compile_options(connect4_server_lib PRIVATE -Wall -Wextra -Wpedantic)
+# ---------------------------------------------------------
+# Optional logging support (spdlog is fetched in root)
+# ---------------------------------------------------------
+if(ENABLE_LOGGING)
+    target_link_libraries(connect4_server_lib PRIVATE spdlog::spdlog)
+    target_compile_definitions(connect4_server_lib PRIVATE ENABLE_LOGGING)
 endif()
 
 # ---------------------------------------------------------
@@ -86,36 +66,12 @@ set_target_properties(connect4_server PROPERTIES
 )
 
 # ---------------------------------------------------------
-# Optional logging support (inherits option from root)
-# ---------------------------------------------------------
-if(ENABLE_LOGGING)
-    target_link_libraries(connect4_server_lib PRIVATE spdlog::spdlog)
-    target_compile_definitions(connect4_server_lib PRIVATE ENABLE_LOGGING)
-endif()
-
-# ---------------------------------------------------------
 # Installation (optional, controlled by parent)
 # ---------------------------------------------------------
-if(INSTALL_SERVER)
+if(INSTALL_EXECUTABLES)
     include(GNUInstallDirs)
 
     install(TARGETS connect4_server
         RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
-    )
-
-    install(TARGETS connect4_server_lib
-        EXPORT Connect4ServerTargets
-        LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
-        ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
-    )
-
-    install(DIRECTORY include/
-        DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
-    )
-
-    install(EXPORT Connect4ServerTargets
-        FILE Connect4ServerTargets.cmake
-        NAMESPACE Connect4::
-        DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/Connect4Server
     )
 endif()

@@ -1,3 +1,4 @@
+#include <random>
 #include "core/game/engine.hpp"
 
 GameEngine::GameEngine(uint8_t rows, uint8_t cols, uint8_t num_players, uint8_t connect_length)
@@ -9,8 +10,12 @@ GameEngine::GameEngine(uint8_t rows, uint8_t cols, uint8_t num_players, uint8_t 
 
 void GameEngine::startGame()
 {
+    static std::random_device rd;  // seed generator (hardware entropy)
+    static std::mt19937 gen(rd()); // Mersenne Twister RNG
+    std::uniform_int_distribution<> dist(1, state_.getBoard().getNumPlayers());
+
     state_.setStatus(GameStatus::IN_PROGRESS);
-    state_.setCurrentPlayer(1);
+    state_.setCurrentPlayer(dist(gen));
     notifyStateChange();
 }
 

@@ -6,6 +6,24 @@
 
 #include "client/client.hpp"
 
+enum class JoinMode
+{
+    AUTO,          // Join first available game
+    BY_ID,         // Join specific game by ID
+    BY_NAME,       // Join game by name
+    CREATE_CUSTOM, // Create custom game
+    CREATE_AI      // Create game with AI opponent
+};
+
+struct GameSpec
+{
+    std::string name;
+    uint8_t rows;
+    uint8_t cols;
+    uint8_t num_players;
+    uint8_t connect_length;
+};
+
 /**
  * Command-line interface for Connect 4
  * Handles user input/output and game display
@@ -32,24 +50,33 @@ private:
     std::string server_host_;
     uint16_t server_port_;
     std::string player_name_;
+    JoinMode join_mode_;
+    std::optional<uint32_t> target_game_id_;
+    std::optional<std::string> target_game_name_;
+    std::optional<GameSpec> custom_game_spec_;
+    bool with_ai_;
 
     // Setup and initialization
     void parseArguments(int argc, char *argv[]);
+    bool parseGameSpec(const std::string &spec);
     void printBanner();
     void setupCallbacks();
     bool connectToServer();
+    void handleJoinMode();
+    void autoJoinGame();
+    void joinGameById(uint32_t game_id);
+    void joinGameByName(const std::string &name);
+    void createCustomGame();
+    void createAIGame();
 
     // Display functions
     void printBoard(const GameStateUpdate &state);
     void printHelp();
-    void clearScreen();
-    void printSeparator(char ch = '=', int length = 50);
+    void printGameList(const std::vector<GameInfo> &games);
 
     // Input handling
     void handleUserInput();
-    int getColumnInput();
 
     // Utility
-    std::string getPlayerSymbol(uint8_t player_id);
     std::string colorize(const std::string &text, int color_code);
 };

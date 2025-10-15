@@ -204,9 +204,9 @@ void test_create_game_request()
 
 void test_game_list_response()
 {
-    std::cout << "Testing GameListResponse serialization...";
+    std::cout << "Testing ListGamesResponse serialization...";
 
-    GameListResponse resp;
+    ListGamesResponse resp;
 
     GameInfo game1;
     game1.game_id = 1;
@@ -230,7 +230,7 @@ void test_game_list_response()
     std::cout << "  Serialized (truncated): " << json.substr(0, 150) << "...";
 
     // Deserialize
-    GameListResponse deserialized = MessageSerializer::deserializeGameListResponse(json);
+    ListGamesResponse deserialized = MessageSerializer::deserializeGameListResponse(json);
 
     assert(deserialized.games.size() == 2);
     assert(deserialized.games[0].game_id == 1);

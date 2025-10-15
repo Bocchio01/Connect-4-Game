@@ -2,6 +2,9 @@
 # CLI client executable
 # ---------------------------------------------------------
 add_executable(connect4_cli
+    src/visual.cpp
+    src/output.cpp
+    src/input.cpp
     src/interface.cpp
     app/main.cpp
 )
@@ -31,14 +34,8 @@ set_target_properties(connect4_cli PROPERTIES
     OUTPUT_NAME "connect4-cli"
 )
 
-if(MSVC)
-    target_compile_options(connect4_cli PRIVATE /W4)
-else()
-    target_compile_options(connect4_cli PRIVATE -Wall -Wextra -Wpedantic)
-endif()
-
 # ---------------------------------------------------------
-# Optional logging support (inherits option from root)
+# Optional logging support (spdlog is fetched in root)
 # ---------------------------------------------------------
 if(ENABLE_LOGGING)
     target_link_libraries(connect4_cli PRIVATE spdlog::spdlog)
@@ -48,7 +45,7 @@ endif()
 # ---------------------------------------------------------
 # Installation (optional, controlled by parent)
 # ---------------------------------------------------------
-if(INSTALL_CLI)
+if(INSTALL_EXECUTABLES)
     include(GNUInstallDirs)
 
     install(TARGETS connect4_cli

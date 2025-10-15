@@ -163,13 +163,14 @@ void test_thread_safety()
     // Create sessions from multiple threads
     for (int t = 0; t < NUM_THREADS; ++t)
     {
-        threads.emplace_back([&manager, &all_tokens, t]()
-                             {
+        threads.emplace_back([&manager, &all_tokens, t, SESSIONS_PER_THREAD]()
+        {
             for (int i = 0; i < SESSIONS_PER_THREAD; ++i) {
                 uint32_t conn_id = t * SESSIONS_PER_THREAD + i;
                 std::string token = manager.createSession(conn_id, "User");
                 all_tokens[t].push_back(token);
-            } });
+            }
+        });
     }
 
     // Wait for all threads

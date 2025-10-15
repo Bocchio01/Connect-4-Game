@@ -18,7 +18,7 @@ class Client
 {
 public:
     // Callback types
-    using ConnectedCallback = std::function<void(uint8_t player_id, uint32_t game_id)>;
+    using ConnectedCallback = std::function<void()>;
     using DisconnectedCallback = std::function<void()>;
     using GameStateUpdateCallback = std::function<void(const GameStateUpdate &)>;
     using GameOverCallback = std::function<void(const GameOverMessage &)>;
@@ -73,15 +73,14 @@ public:
     bool sendConnectRequest(const std::string &player_name);
 
     /**
-     * Make a move (place piece in column)
-     * @param column Column index (0-based)
-     */
-    bool sendMove(uint8_t column);
-
-    /**
      * Create a new game with custom configuration
      */
-    bool sendCreateGame(const GameConfig &config);
+    bool sendCreateGame(const GameConfig &config, const std::string &name = "");
+
+    /**
+     * Request list of available games
+     */
+    bool sendListGames();
 
     /**
      * Join an existing game by ID
@@ -89,9 +88,10 @@ public:
     bool sendJoinGame(uint32_t game_id);
 
     /**
-     * Request list of available games
+     * Make a move (place piece in column)
+     * @param column Column index (0-based)
      */
-    bool sendListGames();
+    bool sendMove(uint8_t column);
 
     /**
      * Send disconnect message
@@ -152,9 +152,19 @@ public:
     uint8_t getPlayerId() const { return player_id_; }
 
     /**
+     * Get current game info
+     */
+    const std::optional<GameInfo> &getGameInfo() const { return game_info_; }
+
+    /**
      * Get current game ID
      */
-    uint32_t getGameId() const { return game_id_; }
+    uint32_t getGameId() const { return game_info_.has_value() ? game_info_->game_id : 0; }
+
+    /**
+     * Get current game name
+     */
+    std::string getGameName() const { return game_info_.has_value() ? game_info_->game_name : std::string(); }
 
     /**
      * Get current game state (updated by server)
@@ -169,7 +179,7 @@ public:
      */
     bool isMyTurn() const
     {
-        if (!current_state_.has_value())
+        if (!current_state_.has_value() || current_state_->status != ProtocolGameStatus::IN_PROGRESS)
             return false;
         return current_state_->current_player == player_id_;
     }
@@ -183,7 +193,7 @@ private:
     // Session state
     std::string session_token_;
     uint8_t player_id_;
-    uint32_t game_id_;
+    std::optional<GameInfo> game_info_;
     std::optional<GameStateUpdate> current_state_;
     std::mutex state_mutex_;
 
@@ -204,6 +214,8 @@ private:
 
     // Message handlers
     void handleConnectResponse(const std::string &payload);
+    void handleCreateGameResponse(const std::string &payload);
+    void handleJoinGameResponse(const std::string &payload);
     void handleGameStateUpdate(const std::string &payload);
     void handleGameOver(const std::string &payload);
     void handleMoveResult(const std::string &payload);

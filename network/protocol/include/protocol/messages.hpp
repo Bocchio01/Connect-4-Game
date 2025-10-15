@@ -33,12 +33,10 @@ struct ConnectRequest
 struct ConnectResponse
 {
     bool success;
-    uint32_t assigned_player_id;
-    uint32_t game_id;
     std::string session_token;
     std::string message; // Success or error message
 
-    ConnectResponse() : success(false), assigned_player_id(0), game_id(0) {}
+    ConnectResponse() : success(false) {}
 };
 
 struct DisconnectMessage
@@ -90,7 +88,8 @@ struct GameStateUpdate
     uint8_t current_player;
     ProtocolGameStatus status;
     std::optional<uint8_t> winner;
-    std::vector<uint8_t> players; // List of player IDs in game
+    std::vector<uint8_t> players;          // List of player IDs in game
+    std::vector<std::string> player_names; // List of player names in game
 
     GameStateUpdate() : game_id(0), rows(0), cols(0),
                         current_player(0), status(ProtocolGameStatus::NOT_STARTED) {}
@@ -122,12 +121,35 @@ struct GameConfig
         : rows(r), cols(c), num_players(np), connect_length(cl) {}
 };
 
+struct GameInfo
+{
+    uint32_t game_id;
+    std::string game_name;
+    uint8_t current_players;
+    ProtocolGameStatus status;
+    GameConfig config;
+
+    GameInfo() : game_id(0), current_players(0),
+                 status(ProtocolGameStatus::NOT_STARTED) {}
+};
+
 struct CreateGameRequest
 {
     std::string session_token;
+    std::string game_name;
     GameConfig config;
 
     CreateGameRequest() = default;
+};
+
+struct CreateGameResponse
+{
+    bool success;
+    uint8_t assigned_player_id;
+    GameInfo game_info;
+    std::string message; // Success or error message
+
+    CreateGameResponse() : success(false) {}
 };
 
 struct JoinGameRequest
@@ -140,16 +162,14 @@ struct JoinGameRequest
         : session_token(token), game_id(gid) {}
 };
 
-struct GameInfo
+struct JoinGameResponse
 {
-    uint32_t game_id;
-    uint8_t current_players;
-    uint8_t max_players;
-    ProtocolGameStatus status;
-    GameConfig config;
+    bool success;
+    uint8_t assigned_player_id;
+    GameInfo game_info;
+    std::string message; // Success or error message
 
-    GameInfo() : game_id(0), current_players(0), max_players(2),
-                 status(ProtocolGameStatus::NOT_STARTED) {}
+    JoinGameResponse() : success(false), assigned_player_id(0) {}
 };
 
 struct ListGamesRequest
@@ -160,11 +180,11 @@ struct ListGamesRequest
     explicit ListGamesRequest(const std::string &token) : session_token(token) {}
 };
 
-struct GameListResponse
+struct ListGamesResponse
 {
     std::vector<GameInfo> games;
 
-    GameListResponse() = default;
+    ListGamesResponse() = default;
 };
 
 // ============================================================================

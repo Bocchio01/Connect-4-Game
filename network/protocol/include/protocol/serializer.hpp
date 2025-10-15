@@ -28,9 +28,11 @@ public:
     static std::string serialize(const GameOverMessage &msg);
 
     static std::string serialize(const CreateGameRequest &msg);
+    static std::string serialize(const CreateGameResponse &msg);
     static std::string serialize(const JoinGameRequest &msg);
+    static std::string serialize(const JoinGameResponse &msg);
     static std::string serialize(const ListGamesRequest &msg);
-    static std::string serialize(const GameListResponse &msg);
+    static std::string serialize(const ListGamesResponse &msg);
 
     static std::string serialize(const ErrorMessage &msg);
 
@@ -49,9 +51,11 @@ public:
     static GameOverMessage deserializeGameOver(const std::string &json);
 
     static CreateGameRequest deserializeCreateGameRequest(const std::string &json);
+    static CreateGameResponse deserializeCreateGameResponse(const std::string &json);
     static JoinGameRequest deserializeJoinGameRequest(const std::string &json);
+    static JoinGameResponse deserializeJoinGameResponse(const std::string &json);
     static ListGamesRequest deserializeListGamesRequest(const std::string &json);
-    static GameListResponse deserializeGameListResponse(const std::string &json);
+    static ListGamesResponse deserializeGameListResponse(const std::string &json);
 
     static ErrorMessage deserializeError(const std::string &json);
 

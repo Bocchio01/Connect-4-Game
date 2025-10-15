@@ -21,6 +21,16 @@ public:
     uint32_t getId() const { return id_; }
 
     /**
+     * Get game name
+     */
+    const std::string &getName() const { return name_; }
+
+    /**
+     * Set game name
+     */
+    void setName(const std::string &name) { name_ = name; }
+
+    /**
      * Get game engine
      */
     GameEngine &getEngine() { return engine_; }
@@ -64,6 +74,7 @@ public:
 
 private:
     uint32_t id_;
+    std::string name_;
     GameEngine engine_;
     std::vector<uint32_t> connections_;                // connection_id for each player
     std::map<uint32_t, uint8_t> connection_to_player_; // connection_id -> player_id
