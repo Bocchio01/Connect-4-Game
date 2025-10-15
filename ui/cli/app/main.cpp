@@ -20,6 +20,7 @@ int main()
 
     while (client.isConnected())
     {
+        // TODO: fix this busy wait
         if (!client.isMyTurn())
         {
             std::this_thread::sleep_for(std::chrono::milliseconds(100));
@@ -42,6 +43,7 @@ int main()
 
 void printBoard(const Board &board)
 {
+    std::cout << std::endl;
     for (uint8_t r = 0; r < board.getRows(); ++r)
     {
         for (uint8_t c = 0; c < board.getCols(); ++c)
@@ -54,6 +56,7 @@ void printBoard(const Board &board)
 
 void printBoard(const std::vector<std::vector<uint8_t>> &grid)
 {
+    std::cout << std::endl;
     for (const auto &row : grid)
     {
         for (const auto &cell : row)

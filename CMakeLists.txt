@@ -7,7 +7,7 @@ project(Connect4 VERSION 0.1 LANGUAGES CXX)
 option(BUILD_CORE "Build core library" ON)
 option(BUILD_NETWORK "Build network components" ON)
 option(BUILD_AI "Build AI client" OFF)
-option(BUILD_CLI "Build CLI client" OFF)
+option(BUILD_CLI "Build CLI client" ON)
 option(BUILD_GUI "Build GUI client" OFF)
 
 option(BUILD_TESTS "Build test executables" ON)

@@ -22,6 +22,14 @@ if(TARGET sockpp-objs)
 endif()
 
 # ---------------------------------------------------------
+# Fetch thread library
+# ---------------------------------------------------------
+find_package(Threads REQUIRED)
+if(NOT Threads_FOUND)
+    message(FATAL_ERROR "Threads library not found")
+endif()
+
+# ---------------------------------------------------------
 # Server library (for potential reuse in tests)
 # ---------------------------------------------------------
 add_library(connect4_server_lib STATIC
@@ -50,6 +58,7 @@ target_link_libraries(connect4_server_lib
     Connect4::core
     Connect4::protocol
     sockpp
+    Threads::Threads
 )
 
 # Platform-specific libraries

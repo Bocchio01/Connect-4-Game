@@ -22,6 +22,14 @@ if(TARGET sockpp-objs)
 endif()
 
 # ---------------------------------------------------------
+# Fetch thread library
+# ---------------------------------------------------------
+find_package(Threads REQUIRED)
+if(NOT Threads_FOUND)
+    message(FATAL_ERROR "Threads library not found")
+endif()
+
+# ---------------------------------------------------------
 # Client library
 # ---------------------------------------------------------
 add_library(connect4_client STATIC
@@ -47,6 +55,7 @@ target_link_libraries(connect4_client
     Connect4::core
     Connect4::protocol
     sockpp
+    Threads::Threads
 )
 
 # Add sockpp include directory manually
