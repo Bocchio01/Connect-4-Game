@@ -1,71 +1,23 @@
-#include "core/board.hpp"
-#include "client/client.hpp"
+#include <iostream>
+#include <exception>
 
-void printBoard(const Board &board);
-void printBoard(const std::vector<std::vector<uint8_t>> &grid);
-void gameStateUpdateCallback(const GameStateUpdate &state);
+#include "cli/interface.hpp"
 
-int main()
+int main(int argc, char *argv[])
 {
-    Client client;
-
-    client.onGameStateUpdate(gameStateUpdateCallback);
-
-    client.connect("localhost", 8080);
-    client.sendConnectRequest("Player");
-
-    std::thread([&]()
-                { client.run(); })
-        .detach();
-
-    while (client.isConnected())
+    try
     {
-        if (!client.isMyTurn())
-        {
-            std::this_thread::sleep_for(std::chrono::milliseconds(100));
-            continue;
-        }
-
-        int col;
-        std::cout << "Enter column to drop piece (-1 to quit): ";
-        std::cin >> col;
-        if (col == -1)
-        {
-            break;
-        }
-        client.sendMove(col);
+        CLIInterface cli;
+        return cli.run(argc, argv);
     }
-
-    client.disconnect();
-    return 0;
-}
-
-void printBoard(const Board &board)
-{
-    for (uint8_t r = 0; r < board.getRows(); ++r)
+    catch (const std::exception &e)
     {
-        for (uint8_t c = 0; c < board.getCols(); ++c)
-        {
-            std::cout << (int)board.get(r, c) << " ";
-        }
-        std::cout << std::endl;
+        std::cerr << "Fatal error: " << e.what() << std::endl;
+        return 1;
     }
-}
-
-void printBoard(const std::vector<std::vector<uint8_t>> &grid)
-{
-    for (const auto &row : grid)
+    catch (...)
     {
-        for (const auto &cell : row)
-        {
-            std::cout << (int)cell << " ";
-        }
-        std::cout << std::endl;
+        std::cerr << "Unknown fatal error" << std::endl;
+        return 1;
     }
-}
-
-void gameStateUpdateCallback(const GameStateUpdate &state)
-{
-    if (state.status == ProtocolGameStatus::IN_PROGRESS)
-        printBoard(state.board);
 }
