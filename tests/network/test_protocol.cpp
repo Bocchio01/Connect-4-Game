@@ -202,7 +202,7 @@ void test_create_game_request()
     std::cout << "passed" << std::endl;
 }
 
-void test_game_list_response()
+void test_LIST_GAMES_RESPONSE()
 {
     std::cout << "Testing ListGamesResponse serialization...";
 
@@ -355,7 +355,7 @@ int main()
         test_error_message();
         test_message_wrapping();
         test_create_game_request();
-        test_game_list_response();
+        test_LIST_GAMES_RESPONSE();
         test_validation();
         test_message_type_to_string();
         test_full_message_flow();

@@ -26,8 +26,8 @@ std::string messageTypeToString(MessageType type)
         return "JOIN_GAME";
     case MessageType::LIST_GAMES:
         return "LIST_GAMES";
-    case MessageType::GAME_LIST_RESPONSE:
-        return "GAME_LIST_RESPONSE";
+    case MessageType::LIST_GAMES_RESPONSE:
+        return "LIST_GAMES_RESPONSE";
     case MessageType::ERROR:
         return "ERROR";
     default:

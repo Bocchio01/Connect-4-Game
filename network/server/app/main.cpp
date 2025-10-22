@@ -2,11 +2,14 @@
 #include <csignal>
 #include <cstdlib>
 #include <string>
+#include <thread>
 
 #include "protocol/protocol.hpp"
 #include "server/game_server.hpp"
 
+// ================================================================
 // Global server pointer for signal handler
+// ================================================================
 GameServer *g_server = nullptr;
 
 /**
@@ -37,7 +40,7 @@ void signalHandler(int signal)
         g_server->stop();
     }
 
-    exit(0);
+    std::exit(0);
 }
 
 /**
@@ -46,110 +49,205 @@ void signalHandler(int signal)
 void printUsage(const char *program_name)
 {
     std::cout << "Usage: " << program_name << " [PORT]" << std::endl;
+    std::cout << "  -h, --help    Show this message\n";
+    std::cout << "  --background  Run in background (daemon/service)\n";
     std::cout << std::endl;
-    std::cout << "Arguments:" << std::endl;
-    std::cout << "  PORT    Port number to listen on (default: "
-              << Protocol::DEFAULT_PORT << ")" << std::endl;
-    std::cout << std::endl;
-    std::cout << "Examples:" << std::endl;
-    std::cout << "  " << program_name << "           # Use default port "
-              << Protocol::DEFAULT_PORT << std::endl;
-    std::cout << "  " << program_name << " 9000      # Use port 9000" << std::endl;
 }
 
-int main(int argc, char *argv[])
+/**
+ * @brief Start the game server logic
+ */
+int runServer(uint16_t port)
 {
-    // ========================================================================
-    // Parse command line arguments
-    // ========================================================================
-
-    uint16_t port = Protocol::DEFAULT_PORT;
-
-    if (argc > 1)
-    {
-        std::string arg = argv[1];
-
-        // Check for help flag
-        if (arg == "-h" || arg == "--help")
-        {
-            printUsage(argv[0]);
-            return 0;
-        }
-
-        // Parse port number
-        try
-        {
-            int port_num = std::stoi(arg);
-
-            if (port_num < 1 || port_num > 65535)
-            {
-                std::cerr << "Error: Port must be between 1 and 65535" << std::endl;
-                return 1;
-            }
-
-            port = static_cast<uint16_t>(port_num);
-        }
-        catch (const std::exception &e)
-        {
-            std::cerr << "Error: Invalid port number '" << arg << "'" << std::endl;
-            printUsage(argv[0]);
-            return 1;
-        }
-    }
-
-    // ========================================================================
-    // Print banner
-    // ========================================================================
-
-    std::cout << "\n";
-    std::cout << "========================================" << std::endl;
-    std::cout << "      Connect 4 Game Server" << std::endl;
-    std::cout << "========================================" << std::endl;
-    std::cout << "Version:          0.1" << std::endl;
-    std::cout << "Protocol Version: " << Protocol::VERSION << std::endl;
-    std::cout << "Port:             " << port << std::endl;
-    std::cout << "Max Message Size: " << Protocol::MAX_MESSAGE_SIZE << " bytes" << std::endl;
-    std::cout << "Max Players:      " << (int)Protocol::MAX_PLAYERS << " per game" << std::endl;
-    std::cout << "========================================" << std::endl;
-    std::cout << std::endl;
-
-    // ========================================================================
-    // Register signal handlers
-    // ========================================================================
-
-    std::signal(SIGINT, signalHandler);  // Ctrl+C
-    std::signal(SIGTERM, signalHandler); // Termination request
-
-#ifndef _WIN32
-    // Ignore SIGPIPE on Unix systems (broken pipe when client disconnects)
-    std::signal(SIGPIPE, SIG_IGN);
-#endif
-
-    // ========================================================================
-    // Create and start server
-    // ========================================================================
-
     try
     {
         GameServer server(port);
         g_server = &server;
 
-        std::cout << "Press Ctrl+C to stop the server\n"
-                  << std::endl;
+        std::signal(SIGINT, signalHandler);
+        std::signal(SIGTERM, signalHandler);
+#ifndef _WIN32
+        std::signal(SIGPIPE, SIG_IGN);
+#endif
 
-        // Start server (blocking call)
-        server.start();
+        std::cout << "Server started on port " << port << std::endl;
+        std::cout << "Press Ctrl+C to stop (if running in foreground)\n";
+        server.start(); // blocking call
     }
     catch (const std::exception &e)
     {
-        std::cerr << "\nServer error: " << e.what() << std::endl;
+        std::cerr << "Server error: " << e.what() << std::endl;
         return 1;
     }
 
-    // ========================================================================
-    // Cleanup
-    // ========================================================================
-
-    std::cout << "\nServer terminated." << std::endl;
+    std::cout << "Server terminated." << std::endl;
     return 0;
+}
+
+// ================================================================
+//  LINUX: Daemonization logic
+// ================================================================
+#ifndef _WIN32
+#include <unistd.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
+
+void daemonize()
+{
+    pid_t pid = fork();
+    if (pid < 0)
+        std::exit(EXIT_FAILURE);
+    if (pid > 0)
+        std::exit(EXIT_SUCCESS);
+
+    if (setsid() < 0)
+        std::exit(EXIT_FAILURE);
+
+    signal(SIGCHLD, SIG_IGN);
+    signal(SIGHUP, SIG_IGN);
+
+    pid = fork();
+    if (pid < 0)
+        std::exit(EXIT_FAILURE);
+    if (pid > 0)
+        std::exit(EXIT_SUCCESS);
+
+    umask(0);
+    chdir("/");
+
+    // Redirect std streams to /dev/null
+    int fd = open("/dev/null", O_RDWR, 0);
+    if (fd != -1)
+    {
+        dup2(fd, STDIN_FILENO);
+        dup2(fd, STDOUT_FILENO);
+        dup2(fd, STDERR_FILENO);
+        if (fd > 2)
+            close(fd);
+    }
+}
+#endif
+
+// ================================================================
+//  WINDOWS: Service Implementation
+// ================================================================
+#ifdef _WIN32
+#include <windows.h>
+
+SERVICE_STATUS_HANDLE g_ServiceStatusHandle = nullptr;
+SERVICE_STATUS g_ServiceStatus{}; // all fields zeroed
+uint16_t g_servicePort = Protocol::DEFAULT_PORT;
+
+void ReportServiceStatus(DWORD currentState, DWORD win32ExitCode, DWORD waitHint)
+{
+    g_ServiceStatus.dwCurrentState = currentState;
+    g_ServiceStatus.dwWin32ExitCode = win32ExitCode;
+    g_ServiceStatus.dwWaitHint = waitHint;
+    g_ServiceStatus.dwServiceType = SERVICE_WIN32_OWN_PROCESS;
+    g_ServiceStatus.dwServiceSpecificExitCode = 0;
+
+    g_ServiceStatus.dwControlsAccepted =
+        (currentState == SERVICE_START_PENDING) ? 0 : SERVICE_ACCEPT_STOP;
+
+    SetServiceStatus(g_ServiceStatusHandle, &g_ServiceStatus);
+}
+
+void WINAPI ServiceCtrlHandler(DWORD ctrl)
+{
+    if (ctrl == SERVICE_CONTROL_STOP)
+    {
+        ReportServiceStatus(SERVICE_STOP_PENDING, NO_ERROR, 0);
+        if (g_server)
+            g_server->stop();
+        ReportServiceStatus(SERVICE_STOPPED, NO_ERROR, 0);
+    }
+}
+
+void WINAPI ServiceMain(DWORD argc, LPWSTR *argv)
+{
+    (void)argc;
+    (void)argv;
+
+    g_ServiceStatusHandle = RegisterServiceCtrlHandler(const_cast<LPCSTR>("Connect4Service"), ServiceCtrlHandler);
+    if (!g_ServiceStatusHandle)
+        return;
+
+    ReportServiceStatus(SERVICE_START_PENDING, NO_ERROR, 3000);
+
+    // Launch your server thread
+    std::thread([]
+                {
+        runServer(g_servicePort);
+        ReportServiceStatus(SERVICE_STOPPED, NO_ERROR, 0); })
+        .detach();
+
+    ReportServiceStatus(SERVICE_RUNNING, NO_ERROR, 0);
+
+    while (g_ServiceStatus.dwCurrentState == SERVICE_RUNNING)
+        Sleep(1000);
+}
+
+void runAsWindowsService(uint16_t port)
+{
+    g_servicePort = port;
+
+    SERVICE_TABLE_ENTRYW serviceTable[] = {
+        {const_cast<LPWSTR>(L"Connect4Service"), (LPSERVICE_MAIN_FUNCTIONW)ServiceMain},
+        {nullptr, nullptr}};
+    StartServiceCtrlDispatcherW(serviceTable);
+}
+#endif
+
+/**
+ * Main entry point
+ */
+int main(int argc, char *argv[])
+{
+    uint16_t port = Protocol::DEFAULT_PORT;
+    bool runInBackground = false;
+
+    // Parse arguments
+    for (int i = 1; i < argc; ++i)
+    {
+        std::string arg = argv[i];
+        if (arg == "-h" || arg == "--help")
+        {
+            printUsage(argv[0]);
+            return 0;
+        }
+        else if (arg == "--background")
+            runInBackground = true;
+        else
+        {
+            try
+            {
+                int portNum = std::stoi(arg);
+                if (portNum < 1 || portNum > 65535)
+                    throw std::out_of_range("port");
+                port = static_cast<uint16_t>(portNum);
+            }
+            catch (...)
+            {
+                std::cerr << "Invalid port: " << arg << std::endl;
+                printUsage(argv[0]);
+                return 1;
+            }
+        }
+    }
+
+    if (runInBackground)
+    {
+        std::cout << "Starting server in background mode..." << std::endl;
+#ifdef _WIN32
+        runAsWindowsService(port);
+        return 0;
+#else
+        daemonize();
+        return runServer(port);
+#endif
+    }
+
+    // Default: foreground
+    return runServer(port);
 }

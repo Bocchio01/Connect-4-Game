@@ -286,7 +286,7 @@ void Client::processMessage(const std::string &data)
             handleJoinGameResponse(payload);
             break;
 
-        case MessageType::GAME_LIST_RESPONSE:
+        case MessageType::LIST_GAMES_RESPONSE:
             handleGameListResponse(payload);
             break;
 

@@ -332,6 +332,7 @@ std::string MessageSerializer::serialize(const ListGamesResponse &msg)
     {
         json game_json;
         game_json["game_id"] = game.game_id;
+        game_json["game_name"] = game.game_name;
         game_json["current_players"] = game.current_players;
         game_json["status"] = static_cast<uint8_t>(game.status);
         game_json["config"]["rows"] = game.config.rows;
@@ -353,6 +354,7 @@ ListGamesResponse MessageSerializer::deserializeGameListResponse(const std::stri
     {
         GameInfo game;
         game.game_id = game_json["game_id"];
+        game.game_name = game_json["game_name"];
         game.current_players = game_json["current_players"];
         game.status = static_cast<ProtocolGameStatus>(game_json["status"].get<uint8_t>());
         game.config.rows = game_json["config"]["rows"];

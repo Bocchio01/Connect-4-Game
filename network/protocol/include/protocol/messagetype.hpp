@@ -26,10 +26,10 @@ enum class MessageType : uint8_t
 
     // Lobby/matchmaking
     CREATE_GAME = 0x20,
-    JOIN_GAME = 0x21,
+    CREATE_GAME_RESPONSE = 0x21,
     LIST_GAMES = 0x22,
-    GAME_LIST_RESPONSE = 0x23,
-    CREATE_GAME_RESPONSE = 0x24,
+    LIST_GAMES_RESPONSE = 0x23,
+    JOIN_GAME = 0x24,
     JOIN_GAME_RESPONSE = 0x25,
 
     // Error handling

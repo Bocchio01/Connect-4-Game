@@ -5,9 +5,6 @@
         "Doxyfile": "shellscript",
         "Doxyfile.in": "shellscript"
     },
-    "cmake.sourceDirectory": [
-        "${workspaceFolder}",
-        // "${workspaceFolder}/core",
-        // "${workspaceFolder}/tests"
-    ]
+    "cmake.sourceDirectory": "${workspaceFolder}",
+    "cmake.buildDirectory": "${workspaceFolder}/build"
 }

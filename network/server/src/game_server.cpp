@@ -342,7 +342,7 @@ void GameServer::handleListGames(std::shared_ptr<Connection> conn,
               << resp.games.size() << " games)" << std::endl;
 
     std::string respPayload = MessageSerializer::serialize(resp);
-    sendWrappedMessage(conn, MessageType::GAME_LIST_RESPONSE, respPayload);
+    sendWrappedMessage(conn, MessageType::LIST_GAMES_RESPONSE, respPayload);
 }
 
 void GameServer::handleJoinGame(std::shared_ptr<Connection> conn,

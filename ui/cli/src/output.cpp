@@ -67,8 +67,15 @@ void CLIInterface::printBoard(const GameStateUpdate &state)
     std::cout << "You are playing as: "
               << colorize(std::string(1, static_cast<char>(PLAYER_VISUALS.at(client_.getPlayerId()).symbol)),
                           PLAYER_VISUALS.at(client_.getPlayerId()).color)
-              << "\n"
               << std::endl;
+    std::optional<GameInfo> const gameInfo = client_.getGameInfo();
+    std::cout << "Current board settings: "
+              << (int)(gameInfo.has_value() ? gameInfo->config.rows : state.rows) << " rows x "
+              << (int)(gameInfo.has_value() ? gameInfo->config.cols : state.cols) << " cols, "
+              << (int)(gameInfo.has_value() ? gameInfo->config.num_players : state.players.size()) << " players, connect "
+              << (int)(gameInfo.has_value() ? gameInfo->config.connect_length : 4) << " to win."
+              << std::endl;
+    std::cout << std::endl;
 
     // Rows
     for (uint8_t r = 0; r < state.rows; ++r)
@@ -89,7 +96,11 @@ void CLIInterface::printBoard(const GameStateUpdate &state)
     // Column numbers
     for (uint8_t c = 0; c < state.cols; ++c)
     {
-        std::cout << " " << std::to_string(c) << " ";
+        std::cout << " " << std::to_string(c);
+        if (c < 10)
+        {
+            std::cout << " ";
+        }
     }
     std::cout << std::endl
               << std::endl;

@@ -167,8 +167,6 @@ void CLIInterface::autoJoinGame()
     std::optional<uint32_t> target_game;
     for (const auto &game : available_games)
     {
-        std::cout << "Checking game ID " << game.game_id << " (" << game.current_players << "/" << static_cast<int>(game.config.num_players) << " players)" << std::endl;
-        std::cout << " Game name: '" << game.game_name << "'" << std::endl;
         if (game.current_players < game.config.num_players &&
             game.status == ProtocolGameStatus::NOT_STARTED &&
             game.game_name == "")
@@ -219,6 +217,7 @@ void CLIInterface::joinGameByName(const std::string &name)
         {
             available_games = games;
             list_received = true;
+            printGameList(games);
         });
 
     client_.sendListGames();
@@ -241,7 +240,6 @@ void CLIInterface::joinGameByName(const std::string &name)
     std::optional<uint32_t> target_game;
     for (const auto &game : available_games)
     {
-        std::cout << "Checking game: " << game.game_name << std::endl;
         if (game.game_name == name &&
             game.current_players < game.config.num_players &&
             game.status == ProtocolGameStatus::NOT_STARTED)
@@ -259,6 +257,7 @@ void CLIInterface::joinGameByName(const std::string &name)
     else
     {
         std::cerr << "Game '" + name + "' not found or full" << std::endl;
+        client_.stop();
     }
 }
 
