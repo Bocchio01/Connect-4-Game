@@ -17,7 +17,7 @@ void printHeader(const std::string &title)
 int main()
 {
     std::cout << "\n";
-    printHeader("Connect 4 Protocol Usage Example");
+    printHeader("Connect X Protocol Usage Example");
 
     std::cout << "\nProtocol Information:" << std::endl;
     std::cout << "  Version: " << Protocol::VERSION << std::endl;
@@ -52,7 +52,7 @@ int main()
     resp.assigned_player_id = 1;
     resp.game_id = 42;
     resp.session_token = "abc123xyz_secure_token";
-    resp.message = "Welcome to Connect 4!";
+    resp.message = "Welcome to Connect X!";
 
     std::string respPayload = MessageSerializer::serialize(resp);
     std::string respMsg = MessageSerializer::wrapMessage(

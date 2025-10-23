@@ -25,7 +25,7 @@ struct GameSpec
 };
 
 /**
- * Command-line interface for Connect 4
+ * Command-line interface for Connect X
  * Handles user input/output and game display
  */
 class CLIInterface

@@ -1,9 +1,9 @@
 # ========================================================
-#  Doxygen template for Connect 4 project
+#  Doxygen template for Connect X project
 # ========================================================
 
-PROJECT_NAME           = "Connect 4 Game"
-PROJECT_BRIEF          = "Online multiplayer Connect 4 game"
+PROJECT_NAME           = "ConnectX"
+PROJECT_BRIEF          = "ConnectX Game Suite"
 PROJECT_LOGO           = "@CMAKE_SOURCE_DIR@/docs/logo55x55.png"
 PROJECT_NUMBER         = "@PROJECT_VERSION@"
 OUTPUT_DIRECTORY       = "@CMAKE_SOURCE_DIR@/docs"
@@ -41,3 +41,5 @@ HTML_COLORSTYLE        = LIGHT # required with Doxygen >= 1.9.5
 
 # README file as main page
 USE_MDFILE_AS_MAINPAGE = @CMAKE_SOURCE_DIR@/README.md
+IMAGE_PATH = @CMAKE_SOURCE_DIR@
+HTML_EXTRA_FILES = @CMAKE_SOURCE_DIR@

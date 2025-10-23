@@ -206,7 +206,7 @@ int main()
 {
     std::cout << "\n=== Running Client Integration Tests ===" << std::endl;
     std::cout << "\nNOTE: These tests require a running server on localhost:8080" << std::endl;
-    std::cout << "Start the server with: ./connect4-server 8080\n"
+    std::cout << "Start the server with: ./connectx-server 8080\n"
               << std::endl;
 
     try

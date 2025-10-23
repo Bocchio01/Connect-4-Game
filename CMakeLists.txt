@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.16)
-project(Connect4 VERSION 0.1 LANGUAGES CXX)
+project(Connectx VERSION 0.1 LANGUAGES CXX)
 
 # =========================================================
 # Build options
@@ -216,7 +216,7 @@ endif()
 # =========================================================
 message(STATUS "")
 message(STATUS "========================================")
-message(STATUS "  Connect 4 Configuration")
+message(STATUS "  Connect X Configuration")
 message(STATUS "========================================")
 message(STATUS "  Version: ${PROJECT_VERSION}")
 message(STATUS "  Build type: ${CMAKE_BUILD_TYPE}")

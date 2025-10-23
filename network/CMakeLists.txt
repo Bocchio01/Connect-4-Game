@@ -5,12 +5,12 @@ add_subdirectory(client)
 # =========================================================
 # Combined Network Library
 # =========================================================
-add_library(connect4_network INTERFACE)
-add_library(Connect4::network ALIAS connect4_network)
+add_library(connectx_network INTERFACE)
+add_library(Connectx::network ALIAS connectx_network)
 
-target_link_libraries(connect4_network
+target_link_libraries(connectx_network
     INTERFACE
-    Connect4::protocol
-    Connect4::server_lib
-    Connect4::client
+    Connectx::protocol
+    Connectx::server_lib
+    Connectx::client
 )

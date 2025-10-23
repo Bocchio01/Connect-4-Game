@@ -1,7 +1,7 @@
 # ---------------------------------------------------------
 # CLI client executable
 # ---------------------------------------------------------
-add_executable(connect4_cli
+add_executable(connectx_cli
     src/visual.cpp
     src/output.cpp
     src/input.cpp
@@ -12,34 +12,34 @@ add_executable(connect4_cli
 # ---------------------------------------------------------
 # Include directories
 # ---------------------------------------------------------
-target_include_directories(connect4_cli PRIVATE
+target_include_directories(connectx_cli PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/include
 )
 
 # ---------------------------------------------------------
 # Link dependencies
 # ---------------------------------------------------------
-target_link_libraries(connect4_cli PRIVATE
-    Connect4::client
+target_link_libraries(connectx_cli PRIVATE
+    Connectx::client
 )
 
-# Note: Connect4::client already includes Connect4::core, Connect4::protocol, and sockpp
+# Note: Connectx::client already includes Connectx::core, Connectx::protocol, and sockpp
 
 # ---------------------------------------------------------
 # Compiler setup
 # ---------------------------------------------------------
-target_compile_features(connect4_cli PUBLIC cxx_std_17)
-set_target_properties(connect4_cli PROPERTIES
+target_compile_features(connectx_cli PUBLIC cxx_std_17)
+set_target_properties(connectx_cli PROPERTIES
     CXX_EXTENSIONS OFF
-    OUTPUT_NAME "connect4-cli"
+    OUTPUT_NAME "connectx-cli"
 )
 
 # ---------------------------------------------------------
 # Optional logging support (spdlog is fetched in root)
 # ---------------------------------------------------------
 if(ENABLE_LOGGING)
-    target_link_libraries(connect4_cli PRIVATE spdlog::spdlog)
-    target_compile_definitions(connect4_cli PRIVATE ENABLE_LOGGING)
+    target_link_libraries(connectx_cli PRIVATE spdlog::spdlog)
+    target_compile_definitions(connectx_cli PRIVATE ENABLE_LOGGING)
 endif()
 
 # ---------------------------------------------------------
@@ -48,7 +48,7 @@ endif()
 if(INSTALL_EXECUTABLES)
     include(GNUInstallDirs)
 
-    install(TARGETS connect4_cli
+    install(TARGETS connectx_cli
         RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
     )
 endif()

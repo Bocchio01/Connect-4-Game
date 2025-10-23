@@ -169,7 +169,7 @@ void WINAPI ServiceMain(DWORD argc, LPWSTR *argv)
     (void)argc;
     (void)argv;
 
-    g_ServiceStatusHandle = RegisterServiceCtrlHandler(const_cast<LPCSTR>("Connect4Service"), ServiceCtrlHandler);
+    g_ServiceStatusHandle = RegisterServiceCtrlHandler(const_cast<LPCSTR>("ConnectxService"), ServiceCtrlHandler);
     if (!g_ServiceStatusHandle)
         return;
 
@@ -193,7 +193,7 @@ void runAsWindowsService(uint16_t port)
     g_servicePort = port;
 
     SERVICE_TABLE_ENTRYW serviceTable[] = {
-        {const_cast<LPWSTR>(L"Connect4Service"), (LPSERVICE_MAIN_FUNCTIONW)ServiceMain},
+        {const_cast<LPWSTR>(L"ConnectxService"), (LPSERVICE_MAIN_FUNCTIONW)ServiceMain},
         {nullptr, nullptr}};
     StartServiceCtrlDispatcherW(serviceTable);
 }
@@ -216,7 +216,7 @@ int main(int argc, char *argv[])
             printUsage(argv[0]);
             return 0;
         }
-        else if (arg == "--background")
+        else if (arg == "--daemon" || arg == "--background")
             runInBackground = true;
         else
         {

@@ -101,7 +101,7 @@ int CLIInterface::run(int argc, char *argv[])
     }
 
     std::cout << "\n"
-              << "Thank you for playing Connect 4!" << std::endl;
+              << "Thank you for playing Connect X!" << std::endl;
 
     return 0;
 }
@@ -305,7 +305,7 @@ void CLIInterface::createAIGame()
 
     std::cout << "Game created! Game ID: " + std::to_string(client_.getGameId()) << std::endl;
     std::cout << " AI opponent not yet implemented. Please launch another client manually." << std::endl;
-    std::cout << " Run: ./connect4-cli -g " + std::to_string(client_.getGameId()) << std::endl;
+    std::cout << " Run: ./connectx-cli -g " + std::to_string(client_.getGameId()) << std::endl;
 }
 
 void CLIInterface::setupCallbacks()

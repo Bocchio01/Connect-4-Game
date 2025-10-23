@@ -15,7 +15,7 @@ GameServer::~GameServer()
 
 void GameServer::start()
 {
-    std::cout << "Starting Connect 4 Server on port " << port_ << "..." << std::endl;
+    std::cout << "Starting Connect X Server on port " << port_ << "..." << std::endl;
 
     // Initialize sockpp library
     sockpp::socket_initializer::initialize();

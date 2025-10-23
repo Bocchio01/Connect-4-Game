@@ -11,7 +11,7 @@
 #include "protocol/protocol.hpp"
 
 /**
- * High-level client for Connect 4 game
+ * High-level client for Connect X game
  * Handles connection, message serialization, and state management
  */
 class Client

@@ -26,7 +26,7 @@ void CLIInterface::printBanner()
 {
     system(CLEAR_COMMAND);
     std::cout << std::string(33, '*') << std::endl;
-    std::cout << "*        Connect 4 Game!        *" << std::endl;
+    std::cout << "*        Connect X Game!        *" << std::endl;
     std::cout << "* TB whises you a great time :) *" << std::endl;
     std::cout << std::string(33, '*') << std::endl;
     std::cout << std::endl;
@@ -34,9 +34,9 @@ void CLIInterface::printBanner()
 
 void CLIInterface::printHelp()
 {
-    std::cout << "Connect 4 CLI Client\n"
+    std::cout << "Connect X CLI Client\n"
               << std::endl;
-    std::cout << "Usage: connect4-cli [OPTIONS]\n"
+    std::cout << "Usage: connectx-cli [OPTIONS]\n"
               << std::endl;
     std::cout << "Options:" << std::endl;
     std::cout << "  --host <hostname>      Server hostname (default: localhost)" << std::endl;
@@ -54,12 +54,12 @@ void CLIInterface::printHelp()
     std::cout << "                         p: num players, n: connect length" << std::endl;
     std::cout << "                         Example: -g 'MyGame<8 10 3 5>'" << std::endl;
     std::cout << "\nExamples:" << std::endl;
-    std::cout << "  connect4-cli" << std::endl;
-    std::cout << "  connect4-cli --name Alice" << std::endl;
-    std::cout << "  connect4-cli -g 42" << std::endl;
-    std::cout << "  connect4-cli -g MyGame" << std::endl;
-    std::cout << "  connect4-cli -g 'BigGame<10 12 3 5>'" << std::endl;
-    std::cout << "  connect4-cli --ai" << std::endl;
+    std::cout << "  connectx-cli" << std::endl;
+    std::cout << "  connectx-cli --name Alice" << std::endl;
+    std::cout << "  connectx-cli -g 42" << std::endl;
+    std::cout << "  connectx-cli -g MyGame" << std::endl;
+    std::cout << "  connectx-cli -g 'BigGame<10 12 3 5>'" << std::endl;
+    std::cout << "  connectx-cli --ai" << std::endl;
 }
 
 void CLIInterface::printBoard(const GameStateUpdate &state)
@@ -68,13 +68,17 @@ void CLIInterface::printBoard(const GameStateUpdate &state)
               << colorize(std::string(1, static_cast<char>(PLAYER_VISUALS.at(client_.getPlayerId()).symbol)),
                           PLAYER_VISUALS.at(client_.getPlayerId()).color)
               << std::endl;
+
     std::optional<GameInfo> const gameInfo = client_.getGameInfo();
-    std::cout << "Current board settings: "
-              << (int)(gameInfo.has_value() ? gameInfo->config.rows : state.rows) << " rows x "
-              << (int)(gameInfo.has_value() ? gameInfo->config.cols : state.cols) << " cols, "
-              << (int)(gameInfo.has_value() ? gameInfo->config.num_players : state.players.size()) << " players, connect "
-              << (int)(gameInfo.has_value() ? gameInfo->config.connect_length : 4) << " to win."
-              << std::endl;
+    if (gameInfo.has_value())
+    {
+        std::cout << "GameInfo: " << gameInfo->game_name << "<"
+                  << (int)gameInfo->config.rows << ", "
+                  << (int)gameInfo->config.cols << ", "
+                  << (int)gameInfo->config.num_players << ", "
+                  << (int)gameInfo->config.connect_length << ">"
+                  << std::endl;
+    }
     std::cout << std::endl;
 
     // Rows

@@ -65,7 +65,7 @@ void printBoard(const std::vector<std::vector<uint8_t>> &board)
 int main()
 {
     std::cout << "========================================" << std::endl;
-    std::cout << "  Connect 4 Client Example" << std::endl;
+    std::cout << "  Connect X Client Example" << std::endl;
     std::cout << "========================================\n"
               << std::endl;
 

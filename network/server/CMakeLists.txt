@@ -1,19 +1,19 @@
 # ---------------------------------------------------------
 # Server library (for potential reuse in tests)
 # ---------------------------------------------------------
-add_library(connect4_server_lib STATIC
+add_library(connectx_server_lib STATIC
     src/connection.cpp
     src/session_manager.cpp
     src/game_session.cpp
     src/game_server.cpp
 )
 
-add_library(Connect4::server_lib ALIAS connect4_server_lib)
+add_library(Connectx::server_lib ALIAS connectx_server_lib)
 
 # ---------------------------------------------------------
 # Include directories
 # ---------------------------------------------------------
-target_include_directories(connect4_server_lib
+target_include_directories(connectx_server_lib
     PUBLIC
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
     $<INSTALL_INTERFACE:include>
@@ -22,24 +22,24 @@ target_include_directories(connect4_server_lib
 # ---------------------------------------------------------
 # Link dependencies (sockpp and Threads are fetched/found in root)
 # ---------------------------------------------------------
-target_link_libraries(connect4_server_lib
+target_link_libraries(connectx_server_lib
     PUBLIC
-    Connect4::core
-    Connect4::protocol
+    Connectx::core
+    Connectx::protocol
     sockpp
     Threads::Threads
 )
 
 # Platform-specific libraries
 if(WIN32)
-    target_link_libraries(connect4_server_lib PUBLIC ws2_32)
+    target_link_libraries(connectx_server_lib PUBLIC ws2_32)
 endif()
 
 # ---------------------------------------------------------
 # Compiler setup
 # ---------------------------------------------------------
-target_compile_features(connect4_server_lib PUBLIC cxx_std_17)
-set_target_properties(connect4_server_lib PROPERTIES
+target_compile_features(connectx_server_lib PUBLIC cxx_std_17)
+set_target_properties(connectx_server_lib PROPERTIES
     POSITION_INDEPENDENT_CODE ON
     CXX_EXTENSIONS OFF
 )
@@ -48,21 +48,21 @@ set_target_properties(connect4_server_lib PROPERTIES
 # Optional logging support (spdlog is fetched in root)
 # ---------------------------------------------------------
 if(ENABLE_LOGGING)
-    target_link_libraries(connect4_server_lib PRIVATE spdlog::spdlog)
-    target_compile_definitions(connect4_server_lib PRIVATE ENABLE_LOGGING)
+    target_link_libraries(connectx_server_lib PRIVATE spdlog::spdlog)
+    target_compile_definitions(connectx_server_lib PRIVATE ENABLE_LOGGING)
 endif()
 
 # ---------------------------------------------------------
 # Server executable
 # ---------------------------------------------------------
-add_executable(connect4_server
+add_executable(connectx_server
     app/main.cpp
 )
 
-target_link_libraries(connect4_server PRIVATE connect4_server_lib)
+target_link_libraries(connectx_server PRIVATE connectx_server_lib)
 
-set_target_properties(connect4_server PROPERTIES
-    OUTPUT_NAME "connect4-server"
+set_target_properties(connectx_server PROPERTIES
+    OUTPUT_NAME "connectx-server"
 )
 
 # ---------------------------------------------------------
@@ -71,7 +71,7 @@ set_target_properties(connect4_server PROPERTIES
 if(INSTALL_EXECUTABLES)
     include(GNUInstallDirs)
 
-    install(TARGETS connect4_server
+    install(TARGETS connectx_server
         RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
     )
 endif()
