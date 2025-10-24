@@ -21,7 +21,7 @@ So here we are in 2025, with a complete rework of the project, now called **Conn
 
 ## Overview
 
-ConnectX Game Suite is a (semi-)professional implementation of the classic Connect X game built with modern `C++` and with a focus on clean architecture.
+ConnectX Game Suite is a (semi-)professional implementation of the classic Connect 4 game built with modern `C++` and with a focus on clean architecture.
 The project demonstrates how to build a networked multiplayer game with properly separated concerns, making each component testable and reusable independently.
 The implementation uses a client-server model where a central server manages game sessions while multiple clients can connect to play.
 

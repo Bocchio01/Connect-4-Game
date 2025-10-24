@@ -1,10 +1,13 @@
 #include <iostream>
 #include <exception>
+#include <spdlog/spdlog.h>
 
 #include "cli/interface.hpp"
 
 int main(int argc, char *argv[])
 {
+    spdlog::set_level(spdlog::level::err);
+
     try
     {
         CLIInterface cli;

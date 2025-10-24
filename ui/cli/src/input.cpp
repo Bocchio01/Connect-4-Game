@@ -19,15 +19,19 @@ void CLIInterface::parseArguments(int argc, char *argv[])
             printHelp();
             exit(0);
         }
+        else if (arg == "-l" || arg == "--list")
+        {
+            request_game_list_ = true;
+        }
         else if (arg == "--host" && i + 1 < argc)
         {
             server_host_ = argv[++i];
         }
-        else if (arg == "--port" && i + 1 < argc)
+        else if ((arg == "-p" || arg == "--port") && i + 1 < argc)
         {
             server_port_ = static_cast<uint16_t>(std::atoi(argv[++i]));
         }
-        else if (arg == "--name" && i + 1 < argc)
+        else if ((arg == "-n" || arg == "--name") && i + 1 < argc)
         {
             player_name_ = argv[++i];
         }
@@ -64,11 +68,6 @@ void CLIInterface::parseArguments(int argc, char *argv[])
                     target_game_name_ = game_arg;
                 }
             }
-        }
-        else if (arg == "--ai")
-        {
-            join_mode_ = JoinMode::CREATE_AI;
-            with_ai_ = true;
         }
     }
 }

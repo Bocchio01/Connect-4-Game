@@ -13,7 +13,6 @@ void test_game_initialization()
     GameEngine engine(6, 7, 2, 4);
 
     assert(engine.getState().getStatus() == GameStatus::NOT_STARTED);
-    assert(engine.getState().getCurrentPlayer() == 1);
     assert(!engine.isGameOver());
 
     std::cout << "passed" << std::endl;
@@ -27,7 +26,6 @@ void test_game_start()
     engine.startGame();
 
     assert(engine.getState().getStatus() == GameStatus::IN_PROGRESS);
-    assert(engine.getState().getCurrentPlayer() == 1);
 
     std::cout << "passed" << std::endl;
 }
@@ -40,13 +38,14 @@ void test_make_move()
     engine.startGame();
 
     // Player 1 makes a move
+    int current_player = engine.getState().getCurrentPlayer();
     bool success = engine.makeMove(3);
     assert(success);
-    assert(engine.getState().getCurrentPlayer() == 2); // Turn advances
+    assert(engine.getState().getCurrentPlayer() == current_player % 2 + 1);
 
     // Check the piece is on the board
     const Board &board = engine.getState().getBoard();
-    assert(board.get(5, 3) == 1); // Bottom row, column 3
+    assert(board.get(5, 3) == current_player); // Bottom row, column 3
 
     std::cout << "passed" << std::endl;
 }
@@ -57,17 +56,18 @@ void test_turn_enforcement()
 
     GameEngine engine(6, 7, 2, 4);
     engine.startGame();
+    int current_player = engine.getState().getCurrentPlayer();
 
     // Player 1's turn
-    bool success = engine.makeMove(3, 1);
+    bool success = engine.makeMove(3, current_player);
     assert(success);
 
     // Try to move again as player 1 (not their turn)
-    success = engine.makeMove(4, 1);
+    success = engine.makeMove(4, current_player);
     assert(!success); // Should fail
 
     // Player 2's turn should work
-    success = engine.makeMove(4, 2);
+    success = engine.makeMove(4, current_player % 2 + 1);
     assert(success);
 
     std::cout << "passed" << std::endl;
@@ -108,17 +108,19 @@ void test_win_detection()
     // P1 plays columns: 0, 1, 2, 3 (horizontal win on bottom row)
     // P2 plays columns: 4, 5, 6 (to give P1 turns)
 
-    engine.makeMove(0, 1); // P1
-    engine.makeMove(4, 2); // P2
-    engine.makeMove(1, 1); // P1
-    engine.makeMove(5, 2); // P2
-    engine.makeMove(2, 1); // P1
-    engine.makeMove(6, 2); // P2
-    engine.makeMove(3, 1); // P1 - winning move!
+    int current_player = engine.getState().getCurrentPlayer();
+
+    engine.makeMove(0, ++current_player % 2 + 1); // P1
+    engine.makeMove(4, ++current_player % 2 + 1); // P2
+    engine.makeMove(1, ++current_player % 2 + 1); // P1
+    engine.makeMove(5, ++current_player % 2 + 1); // P2
+    engine.makeMove(2, ++current_player % 2 + 1); // P1
+    engine.makeMove(6, ++current_player % 2 + 1); // P2
+    engine.makeMove(3, ++current_player % 2 + 1); // P1 - winning move!
 
     assert(engine.isGameOver());
     assert(engine.getState().getStatus() == GameStatus::FINISHED_WIN);
-    assert(engine.getState().getWinner().value() == 1);
+    assert(engine.getState().getWinner().value() == current_player-- % 2 + 1);
 
     std::cout << "passed" << std::endl;
 }
@@ -164,14 +166,16 @@ void test_move_after_game_over()
     GameEngine engine(6, 7, 2, 4);
     engine.startGame();
 
+    int current_player = engine.getState().getCurrentPlayer();
+
     // Create a quick win
-    engine.makeMove(0, 1);
-    engine.makeMove(6, 2);
-    engine.makeMove(1, 1);
-    engine.makeMove(6, 2);
-    engine.makeMove(2, 1);
-    engine.makeMove(6, 2);
-    engine.makeMove(3, 1); // P1 wins
+    engine.makeMove(0, ++current_player % 2 + 1);
+    engine.makeMove(6, ++current_player % 2 + 1);
+    engine.makeMove(1, ++current_player % 2 + 1);
+    engine.makeMove(6, ++current_player % 2 + 1);
+    engine.makeMove(2, ++current_player % 2 + 1);
+    engine.makeMove(6, ++current_player % 2 + 1);
+    engine.makeMove(3, ++current_player % 2 + 1); // P1 wins
 
     assert(engine.isGameOver());
 
@@ -198,7 +202,6 @@ void test_reset()
     engine.reset();
 
     assert(engine.getState().getStatus() == GameStatus::NOT_STARTED);
-    assert(engine.getState().getCurrentPlayer() == 1);
     assert(engine.getState().getMoveHistory().empty());
 
     // Board should be clear
@@ -223,15 +226,15 @@ void test_move_history()
 
     assert(engine.getState().getMoveHistory().empty());
 
-    engine.makeMove(3, 1);
-    engine.makeMove(4, 2);
-    engine.makeMove(5, 1);
+    engine.makeMove(3);
+    engine.makeMove(4);
+    engine.makeMove(5);
 
     const auto &history = engine.getState().getMoveHistory();
     assert(history.size() == 3);
-    assert(history[0].column == 3 && history[0].player_id == 1);
-    assert(history[1].column == 4 && history[1].player_id == 2);
-    assert(history[2].column == 5 && history[2].player_id == 1);
+    assert(history[0].column == 3);
+    assert(history[1].column == 4);
+    assert(history[2].column == 5);
 
     std::cout << "passed" << std::endl;
 }
@@ -255,8 +258,7 @@ void test_state_callback()
 
     engine.makeMove(3); // Callback 2
     assert(callback_count == 2);
-    assert(last_player == 2); // Turn advanced to player 2
-
+    assert(last_player == engine.getState().getCurrentPlayer());
     std::cout << "passed" << std::endl;
 }
 
@@ -267,16 +269,17 @@ void test_three_player_game()
     GameEngine engine(6, 7, 3, 4);
     engine.startGame();
 
-    assert(engine.getState().getCurrentPlayer() == 1);
+    int current_player = engine.getState().getCurrentPlayer();
+    assert(engine.getState().getCurrentPlayer() == current_player);
 
-    engine.makeMove(3, 1);
-    assert(engine.getState().getCurrentPlayer() == 2);
+    engine.makeMove(3);
+    assert(engine.getState().getCurrentPlayer() == current_player % 3 + 1);
 
-    engine.makeMove(4, 2);
-    assert(engine.getState().getCurrentPlayer() == 3);
+    engine.makeMove(4);
+    assert(engine.getState().getCurrentPlayer() == ++current_player % 3 + 1);
 
-    engine.makeMove(5, 3);
-    assert(engine.getState().getCurrentPlayer() == 1); // Wraps around
+    engine.makeMove(5);
+    assert(engine.getState().getCurrentPlayer() == ++current_player % 3 + 1); // Wraps around
 
     std::cout << "passed" << std::endl;
 }

@@ -1,5 +1,6 @@
 #include <iostream>
 #include <cstring>
+#include <spdlog/spdlog.h>
 
 #include "client/client.hpp"
 
@@ -21,13 +22,13 @@ Client::~Client()
 
 bool Client::connect(const std::string &host, uint16_t port)
 {
+    spdlog::info("Connecting to {}:{}...", host, port);
+
     if (connected_)
     {
-        std::cerr << "[Client] Already connected" << std::endl;
+        spdlog::warn("Already connected");
         return false;
     }
-
-    std::cout << "[Client] Connecting to " << host << ":" << port << "..." << std::endl;
 
     // Initialize sockpp
     sockpp::socket_initializer::initialize();
@@ -35,24 +36,25 @@ bool Client::connect(const std::string &host, uint16_t port)
     // Connect
     if (!socket_.connect(sockpp::inet_address(host, port)))
     {
-        std::cerr << "[Client] Connection failed: " << socket_.last_error_str() << std::endl;
+        spdlog::error("Connection failed: {}", socket_.last_error_str());
         return false;
     }
 
     connected_ = true;
-    std::cout << "[Client] Connected successfully!" << std::endl;
+    spdlog::info("Connected to the server");
 
     return true;
 }
 
 void Client::disconnect()
 {
+    spdlog::info("Disconnecting from server...");
+
     if (!connected_)
     {
+        spdlog::warn("Not connected");
         return;
     }
-
-    std::cout << "[Client] Disconnecting..." << std::endl;
 
     running_ = false;
     connected_ = false;
@@ -67,19 +69,20 @@ void Client::disconnect()
         disconnected_callback_();
     }
 
-    std::cout << "[Client] Disconnected" << std::endl;
+    spdlog::info("Disconnected");
 }
 
 void Client::run()
 {
+    spdlog::debug("Starting event loop...");
+
     if (!connected_)
     {
-        std::cerr << "[Client] Not connected" << std::endl;
+        spdlog::error("Cannot run event loop: not connected");
         return;
     }
 
     running_ = true;
-    std::cout << "[Client] Starting event loop..." << std::endl;
 
     while (running_ && connected_)
     {
@@ -90,7 +93,7 @@ void Client::run()
             if (message.empty())
             {
                 // Connection closed or error
-                std::cout << "[Client] Connection closed by server" << std::endl;
+                spdlog::info("Connection closed by server");
                 disconnect();
                 break;
             }
@@ -99,13 +102,13 @@ void Client::run()
         }
         catch (const std::exception &e)
         {
-            std::cerr << "[Client] Error in event loop: " << e.what() << std::endl;
+            spdlog::error("Error in event loop: {}", e.what());
             disconnect();
             break;
         }
     }
 
-    std::cout << "[Client] Event loop stopped" << std::endl;
+    spdlog::debug("Event loop stopped");
 }
 
 void Client::stop()
@@ -123,18 +126,16 @@ void Client::stop()
 
 bool Client::sendConnectRequest(const std::string &player_name)
 {
+    spdlog::debug("Sending connect request as '{}'", player_name);
+
     ConnectRequest req(player_name);
     std::string payload = MessageSerializer::serialize(req);
-    return sendMessage(MessageType::CONNECT_REQUEST, payload);
+    return sendMessage(MessageType::REQ_CONNECT, payload);
 }
 
 bool Client::sendMove(uint8_t column)
 {
-    if (session_token_.empty())
-    {
-        std::cerr << "[Client] Not authenticated (no session token)" << std::endl;
-        return false;
-    }
+    spdlog::debug("Sending move request: column {}", (int)column);
 
     MakeMoveRequest req(session_token_, column);
     std::string payload = MessageSerializer::serialize(req);
@@ -143,11 +144,10 @@ bool Client::sendMove(uint8_t column)
 
 bool Client::sendCreateGame(const GameConfig &config, const std::string &name)
 {
-    if (session_token_.empty())
-    {
-        std::cerr << "[Client] Not authenticated (no session token)" << std::endl;
-        return false;
-    }
+    spdlog::debug("Sending create game request: ({})<{}, {}, {}, {}>",
+                  name.empty() ? "default" : name,
+                  (int)config.rows, (int)config.cols,
+                  (int)config.num_players, (int)config.connect_length);
 
     CreateGameRequest req;
     req.session_token = session_token_;
@@ -155,37 +155,31 @@ bool Client::sendCreateGame(const GameConfig &config, const std::string &name)
     req.config = config;
 
     std::string payload = MessageSerializer::serialize(req);
-    return sendMessage(MessageType::CREATE_GAME, payload);
+    return sendMessage(MessageType::REQ_CREATE_GAME, payload);
 }
 
 bool Client::sendJoinGame(uint32_t game_id)
 {
-    if (session_token_.empty())
-    {
-        std::cerr << "[Client] Not authenticated (no session token)" << std::endl;
-        return false;
-    }
+    spdlog::debug("Sending join game request: game ID {}", game_id);
 
     JoinGameRequest req(session_token_, game_id);
     std::string payload = MessageSerializer::serialize(req);
-    return sendMessage(MessageType::JOIN_GAME, payload);
+    return sendMessage(MessageType::REQ_JOIN_GAME, payload);
 }
 
 bool Client::sendListGames()
 {
-    if (session_token_.empty())
-    {
-        std::cerr << "[Client] Not authenticated (no session token)" << std::endl;
-        return false;
-    }
+    spdlog::debug("Sending list games request");
 
     ListGamesRequest req(session_token_);
     std::string payload = MessageSerializer::serialize(req);
-    return sendMessage(MessageType::LIST_GAMES, payload);
+    return sendMessage(MessageType::REQ_LIST_GAMES, payload);
 }
 
 bool Client::sendDisconnect(const std::string &reason)
 {
+    spdlog::debug("Sending disconnect message: {}", reason);
+
     DisconnectMessage msg(reason);
     std::string payload = MessageSerializer::serialize(msg);
     return sendMessage(MessageType::DISCONNECT, payload);
@@ -199,7 +193,7 @@ bool Client::sendMessage(MessageType type, const std::string &payload)
 {
     if (!connected_)
     {
-        std::cerr << "[Client] Cannot send: not connected" << std::endl;
+        spdlog::error("Cannot send message: not connected");
         return false;
     }
 
@@ -224,7 +218,7 @@ std::string Client::readMessage()
     // Validate message size
     if (length == 0 || length > Protocol::MAX_MESSAGE_SIZE)
     {
-        std::cerr << "[Client] Invalid message length: " << length << std::endl;
+        spdlog::error("Invalid message length: {}", length);
         return "";
     }
 
@@ -245,7 +239,7 @@ bool Client::writeMessage(const std::string &message)
     // Validate message size
     if (message.size() > Protocol::MAX_MESSAGE_SIZE)
     {
-        std::cerr << "[Client] Message too large: " << message.size() << std::endl;
+        spdlog::error("Message too large: {}", message.size());
         return false;
     }
 
@@ -271,31 +265,29 @@ void Client::processMessage(const std::string &data)
         // Unwrap message
         auto [type, payload] = MessageSerializer::unwrapMessage(data);
 
+        spdlog::debug("Received message of type {}", messageTypeToString(type));
+
         // Route to appropriate handler
         switch (type)
         {
-        case MessageType::CONNECT_RESPONSE:
+        case MessageType::RES_CONNECT:
             handleConnectResponse(payload);
             break;
 
-        case MessageType::CREATE_GAME_RESPONSE:
+        case MessageType::RES_CREATE_GAME:
             handleCreateGameResponse(payload);
             break;
 
-        case MessageType::JOIN_GAME_RESPONSE:
+        case MessageType::RES_JOIN_GAME:
             handleJoinGameResponse(payload);
             break;
 
-        case MessageType::LIST_GAMES_RESPONSE:
+        case MessageType::RES_LIST_GAMES:
             handleGameListResponse(payload);
             break;
 
         case MessageType::GAME_STATE_UPDATE:
             handleGameStateUpdate(payload);
-            break;
-
-        case MessageType::GAME_OVER:
-            handleGameOver(payload);
             break;
 
         case MessageType::MOVE_RESULT:
@@ -307,14 +299,13 @@ void Client::processMessage(const std::string &data)
             break;
 
         default:
-            std::cerr << "[Client] Unknown message type: "
-                      << static_cast<int>(type) << std::endl;
+            spdlog::warn("Unknown message type: {}", static_cast<int>(type));
             break;
         }
     }
     catch (const std::exception &e)
     {
-        std::cerr << "[Client] Error processing message: " << e.what() << std::endl;
+        spdlog::error("Error processing message: {}", e.what());
     }
 }
 
@@ -331,7 +322,7 @@ void Client::handleConnectResponse(const std::string &payload)
         std::lock_guard<std::mutex> lock(state_mutex_);
         session_token_ = resp.session_token;
 
-        std::cout << "[Client] Connected ... " << std::endl;
+        spdlog::debug("Connected successfully, session token: {}", session_token_);
 
         if (connected_callback_)
         {
@@ -340,7 +331,7 @@ void Client::handleConnectResponse(const std::string &payload)
     }
     else
     {
-        std::cerr << "[Client] Connection failed: " << resp.message << std::endl;
+        spdlog::error("Connection failed: {}", resp.message);
 
         if (error_callback_)
         {
@@ -357,16 +348,14 @@ void Client::handleCreateGameResponse(const std::string &payload)
     {
         {
             std::lock_guard<std::mutex> lock(state_mutex_);
-            player_id_ = resp.assigned_player_id;
             game_info_ = resp.game_info;
         }
 
-        std::cout << "[Client] Game created with ID " << resp.game_info.game_id
-                  << ", assigned player ID " << (int)resp.assigned_player_id << std::endl;
+        spdlog::debug("Game created successfully, game ID: {}", resp.game_info.game_id);
     }
     else
     {
-        std::cerr << "[Client] Create game failed: " << resp.message << std::endl;
+        spdlog::warn("Create game failed: {}", resp.message);
 
         if (error_callback_)
         {
@@ -386,12 +375,13 @@ void Client::handleJoinGameResponse(const std::string &payload)
             player_id_ = resp.assigned_player_id;
             game_info_ = resp.game_info;
         }
-        std::cout << "[Client] Joined game ID " << resp.game_info.game_id
-                  << ", assigned player ID " << (int)resp.assigned_player_id << std::endl;
+
+        spdlog::debug("Joined game successfully, game ID: {}, assigned player ID: {}",
+                      resp.game_info.game_id, resp.assigned_player_id);
     }
     else
     {
-        std::cerr << "[Client] Join game failed: " << resp.message << std::endl;
+        spdlog::warn("Join game failed: {}", resp.message);
 
         if (error_callback_)
         {
@@ -409,27 +399,20 @@ void Client::handleGameStateUpdate(const std::string &payload)
         current_state_ = update;
     }
 
+    spdlog::debug("Received game state update for game ID: {}", update.game_id);
+
     if (game_state_callback_)
     {
         game_state_callback_(update);
     }
 }
 
-void Client::handleGameOver(const std::string &payload)
-{
-    GameOverMessage msg = MessageSerializer::deserializeGameOver(payload);
-
-    std::cout << "[Client] Game Over: " << msg.message << std::endl;
-
-    if (game_over_callback_)
-    {
-        game_over_callback_(msg);
-    }
-}
-
 void Client::handleMoveResult(const std::string &payload)
 {
     MoveResult result = MessageSerializer::deserializeMoveResult(payload);
+
+    spdlog::debug("Received move result: success={}, message='{}'",
+                  result.success, result.message);
 
     if (move_result_callback_)
     {
@@ -441,8 +424,7 @@ void Client::handleError(const std::string &payload)
 {
     ErrorMessage err = MessageSerializer::deserializeError(payload);
 
-    std::cerr << "[Client] Server error " << err.error_code
-              << ": " << err.error_message << std::endl;
+    spdlog::error("Server error {}: {}", err.error_code, err.error_message);
 
     if (error_callback_)
     {
@@ -453,6 +435,8 @@ void Client::handleError(const std::string &payload)
 void Client::handleGameListResponse(const std::string &payload)
 {
     ListGamesResponse resp = MessageSerializer::deserializeGameListResponse(payload);
+
+    spdlog::debug("Received game list response: {} games available", resp.games.size());
 
     if (game_list_callback_)
     {

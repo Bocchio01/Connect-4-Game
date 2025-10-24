@@ -1,18 +1,18 @@
 #pragma once
 
+#include <atomic>
+#include <cstdint>
 #include <map>
 #include <memory>
-#include <thread>
-#include <atomic>
 #include <mutex>
-#include <cstdint>
 #include <queue>
 #include <sockpp/tcp_acceptor.h>
+#include <thread>
 
 #include "protocol/protocol.hpp"
 #include "server/connection.hpp"
-#include "server/session_manager.hpp"
 #include "server/game_session.hpp"
+#include "server/session_manager.hpp"
 
 /**
  * Main game server
@@ -75,9 +75,10 @@ private:
                             MessageType type, const std::string &payload);
     void broadcastGameState(uint32_t game_id);
     uint32_t createGame(uint8_t rows, uint8_t cols, uint8_t num_players,
-                        uint8_t connect_length);
-    GameInfo getGameInfo(uint32_t game_id, const std::shared_ptr<GameSession> &game);
+                        uint8_t connect_length, std::string game_name = "");
+    GameInfo getGameInfo(uint32_t game_id, const GameSession &game);
     GameStateUpdate createGameStateUpdate(const GameSession &game);
+    void skipAbandonedPlayers(const std::shared_ptr<GameSession> &game);
 
     uint16_t port_;
 

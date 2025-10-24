@@ -145,7 +145,6 @@ struct CreateGameRequest
 struct CreateGameResponse
 {
     bool success;
-    uint8_t assigned_player_id;
     GameInfo game_info;
     std::string message; // Success or error message
 

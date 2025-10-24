@@ -6,5 +6,6 @@
         "Doxyfile.in": "shellscript"
     },
     "cmake.sourceDirectory": "${workspaceFolder}",
-    "cmake.buildDirectory": "${workspaceFolder}/build"
+    "cmake.buildDirectory": "${workspaceFolder}/build",
+    // "C_Cpp.clang_format_style": "{BasedOnStyle: LLVM, AllowShortIfStatementsOnASingleLine: AllIfsAndElse, AllowShortLoopsOnASingleLine: true}"
 }

@@ -28,8 +28,6 @@ void test_connect_response()
 
     ConnectResponse resp;
     resp.success = true;
-    resp.assigned_player_id = 1;
-    resp.game_id = 42;
     resp.session_token = "abc123xyz";
     resp.message = "Welcome to the game!";
 
@@ -41,8 +39,6 @@ void test_connect_response()
     ConnectResponse deserialized = MessageSerializer::deserializeConnectResponse(json);
 
     assert(deserialized.success == resp.success);
-    assert(deserialized.assigned_player_id == resp.assigned_player_id);
-    assert(deserialized.game_id == resp.game_id);
     assert(deserialized.session_token == resp.session_token);
     assert(deserialized.message == resp.message);
 
@@ -202,7 +198,7 @@ void test_create_game_request()
     std::cout << "passed" << std::endl;
 }
 
-void test_LIST_GAMES_RESPONSE()
+void test_RES_LIST_GAMES()
 {
     std::cout << "Testing ListGamesResponse serialization...";
 
@@ -211,14 +207,12 @@ void test_LIST_GAMES_RESPONSE()
     GameInfo game1;
     game1.game_id = 1;
     game1.current_players = 1;
-    game1.max_players = 2;
     game1.status = ProtocolGameStatus::NOT_STARTED;
     game1.config = GameConfig(6, 7, 2, 4);
 
     GameInfo game2;
     game2.game_id = 2;
     game2.current_players = 2;
-    game2.max_players = 2;
     game2.status = ProtocolGameStatus::IN_PROGRESS;
     game2.config = GameConfig(8, 8, 2, 5);
 
@@ -268,10 +262,9 @@ void test_message_type_to_string()
 {
     std::cout << "Testing messageTypeToString...";
 
-    assert(messageTypeToString(MessageType::CONNECT_REQUEST) == "CONNECT_REQUEST");
+    assert(messageTypeToString(MessageType::REQ_CONNECT) == "REQ_CONNECT");
     assert(messageTypeToString(MessageType::MAKE_MOVE) == "MAKE_MOVE");
     assert(messageTypeToString(MessageType::ERROR) == "ERROR");
-    assert(messageTypeToString(MessageType::GAME_OVER) == "GAME_OVER");
 
     std::cout << "passed" << std::endl;
 }
@@ -284,13 +277,13 @@ void test_full_message_flow()
     ConnectRequest connectReq("TestPlayer");
     std::string connectPayload = MessageSerializer::serialize(connectReq);
     std::string connectWrapped = MessageSerializer::wrapMessage(
-        MessageType::CONNECT_REQUEST, connectPayload);
+        MessageType::REQ_CONNECT, connectPayload);
 
     std::cout << "  Client sends: " << connectWrapped << std::endl;
 
     // 2. Server receives and unwraps
     auto [connectType, connectRecvPayload] = MessageSerializer::unwrapMessage(connectWrapped);
-    assert(connectType == MessageType::CONNECT_REQUEST);
+    assert(connectType == MessageType::REQ_CONNECT);
 
     ConnectRequest serverRecvConnect = MessageSerializer::deserializeConnectRequest(connectRecvPayload);
     assert(serverRecvConnect.player_name == "TestPlayer");
@@ -298,24 +291,21 @@ void test_full_message_flow()
     // 3. Server responds
     ConnectResponse connectResp;
     connectResp.success = true;
-    connectResp.assigned_player_id = 1;
-    connectResp.game_id = 42;
     connectResp.session_token = "secure_token_123";
     connectResp.message = "Connected successfully";
 
     std::string respPayload = MessageSerializer::serialize(connectResp);
     std::string respWrapped = MessageSerializer::wrapMessage(
-        MessageType::CONNECT_RESPONSE, respPayload);
+        MessageType::RES_CONNECT, respPayload);
 
     std::cout << "  Server responds: " << respWrapped.substr(0, 100) << "...";
 
     // 4. Client receives response
     auto [respType, respRecvPayload] = MessageSerializer::unwrapMessage(respWrapped);
-    assert(respType == MessageType::CONNECT_RESPONSE);
+    assert(respType == MessageType::RES_CONNECT);
 
     ConnectResponse clientRecvResp = MessageSerializer::deserializeConnectResponse(respRecvPayload);
     assert(clientRecvResp.success);
-    assert(clientRecvResp.assigned_player_id == 1);
     assert(clientRecvResp.session_token == "secure_token_123");
 
     // 5. Client makes a move
@@ -355,7 +345,7 @@ int main()
         test_error_message();
         test_message_wrapping();
         test_create_game_request();
-        test_LIST_GAMES_RESPONSE();
+        test_RES_LIST_GAMES();
         test_validation();
         test_message_type_to_string();
         test_full_message_flow();

@@ -61,30 +61,15 @@ void test_full_game_flow()
     std::atomic<bool> game_over = false;
 
     // Setup callbacks for client 1
-    client1.onConnected([&](uint8_t player_id, uint32_t game_id)
-                        {
-        std::cout << "  Client 1 connected: Player " << (int)player_id
-                  << ", Game " << game_id << std::endl;
-        client1_connected = true; });
+    client1.onConnected([&]()
+                        { client1_connected = true; });
 
     client1.onGameStateUpdate([&](const GameStateUpdate &)
                               { state_updates++; });
 
-    client1.onGameOver([&](const GameOverMessage &msg)
-                       {
-        std::cout << "  Game over: " << msg.message << std::endl;
-        game_over = true; });
-
     // Setup callbacks for client 2
-    client2.onConnected([&](uint8_t player_id, uint32_t game_id)
-                        {
-        std::cout << "  Client 2 connected: Player " << (int)player_id
-                  << ", Game " << game_id << std::endl;
-        client2_connected = true; });
-
-    // Send connect requests
-    client1.sendConnectRequest("Player1");
-    client2.sendConnectRequest("Player2");
+    client2.onConnected([&]()
+                        { client2_connected = true; });
 
     // Start event loops in threads
     std::thread thread1([&]()
@@ -93,6 +78,10 @@ void test_full_game_flow()
     std::thread thread2([&]()
                         { client2.run(); });
 
+    // Send connect requests
+    client1.sendConnectRequest("Player1");
+    client2.sendConnectRequest("Player2");
+
     // Wait for both to connect
     auto start = std::chrono::steady_clock::now();
     while ((!client1_connected || !client2_connected) &&
@@ -100,6 +89,9 @@ void test_full_game_flow()
     {
         std::this_thread::sleep_for(std::chrono::milliseconds(100));
     }
+
+    client1.sendJoinGame(0); // Join game ID 0
+    client2.sendJoinGame(0); // Join game ID 0
 
     if (!client1_connected || !client2_connected)
     {
@@ -162,7 +154,7 @@ void test_error_handling()
         std::cout << "  Received error " << code << ": " << msg << std::endl;
         error_received = true; });
 
-    client.onConnected([&](uint8_t, uint32_t)
+    client.onConnected([&]()
                        {
                            // Try to make move before it's our turn (should error)
                            std::this_thread::sleep_for(std::chrono::milliseconds(100));

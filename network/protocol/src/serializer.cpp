@@ -225,7 +225,6 @@ std::string MessageSerializer::serialize(const CreateGameResponse &msg)
 {
     json j;
     j["success"] = msg.success;
-    j["assigned_player_id"] = msg.assigned_player_id;
     j["game_info"]["game_id"] = msg.game_info.game_id;
     j["game_info"]["name"] = msg.game_info.game_name;
     j["game_info"]["current_players"] = msg.game_info.current_players;
@@ -243,7 +242,6 @@ CreateGameResponse MessageSerializer::deserializeCreateGameResponse(const std::s
     json j = json::parse(json_str);
     CreateGameResponse msg;
     msg.success = j["success"];
-    msg.assigned_player_id = j["assigned_player_id"];
     msg.game_info.game_id = j["game_info"]["game_id"];
     msg.game_info.game_name = j["game_info"]["name"];
     msg.game_info.current_players = j["game_info"]["current_players"];

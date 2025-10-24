@@ -28,6 +28,7 @@ target_link_libraries(connectx_server_lib
     Connectx::protocol
     sockpp
     Threads::Threads
+    spdlog::spdlog
 )
 
 # Platform-specific libraries
@@ -43,14 +44,6 @@ set_target_properties(connectx_server_lib PROPERTIES
     POSITION_INDEPENDENT_CODE ON
     CXX_EXTENSIONS OFF
 )
-
-# ---------------------------------------------------------
-# Optional logging support (spdlog is fetched in root)
-# ---------------------------------------------------------
-if(ENABLE_LOGGING)
-    target_link_libraries(connectx_server_lib PRIVATE spdlog::spdlog)
-    target_compile_definitions(connectx_server_lib PRIVATE ENABLE_LOGGING)
-endif()
 
 # ---------------------------------------------------------
 # Server executable

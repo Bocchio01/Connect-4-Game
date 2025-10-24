@@ -1,10 +1,10 @@
-#include <iostream>
 #include <algorithm>
+#include <iostream>
+#include <spdlog/spdlog.h>
+
 #include "server/game_server.hpp"
 
-GameServer::GameServer(uint16_t port)
-    : port_(port),
-      running_(false)
+GameServer::GameServer(uint16_t port) : port_(port), running_(false)
 {
 }
 
@@ -15,7 +15,7 @@ GameServer::~GameServer()
 
 void GameServer::start()
 {
-    std::cout << "Starting Connect X Server on port " << port_ << "..." << std::endl;
+    spdlog::info("Starting Connect X Server...");
 
     // Initialize sockpp library
     sockpp::socket_initializer::initialize();
@@ -23,15 +23,17 @@ void GameServer::start()
     // Create acceptor
     if (!acceptor_.open(port_))
     {
-        std::cerr << "Error creating acceptor: " << acceptor_.last_error_str() << std::endl;
+        spdlog::error("Error creating acceptor: {}", acceptor_.last_error_str());
         return;
     }
 
+    // Start listening
     running_ = true;
-    std::cout << "Server started successfully!" << std::endl;
-    std::cout << "Waiting for connections..." << std::endl;
+    sockpp::inet_address addr = acceptor_.address();
+    uint16_t port = addr.port();
+    spdlog::info("Server started successfully on port {}", port);
 
-    // Accept connections (blocking)
+    // Accept connections
     acceptConnections();
 }
 
@@ -42,7 +44,7 @@ void GameServer::stop()
         return;
     }
 
-    std::cout << "\nStopping server..." << std::endl;
+    spdlog::info("Stopping Connect X Server...");
     running_ = false;
 
     // Close all connections
@@ -56,7 +58,7 @@ void GameServer::stop()
     }
 
     acceptor_.close();
-    std::cout << "Server stopped" << std::endl;
+    spdlog::info("Server stopped.");
 }
 
 void GameServer::acceptConnections()
@@ -66,13 +68,12 @@ void GameServer::acceptConnections()
         sockpp::inet_address peer;
         sockpp::tcp_socket socket = acceptor_.accept(&peer);
 
+        spdlog::debug("Incoming connection from {}", peer.to_string());
+
         if (!socket)
         {
             if (running_)
-            {
-                std::cerr << "Error accepting connection: "
-                          << acceptor_.last_error_str() << std::endl;
-            }
+                spdlog::error("Error accepting connection: {}", acceptor_.last_error_str());
             continue;
         }
 
@@ -97,8 +98,7 @@ void GameServer::acceptConnections()
             connections_[conn_id] = conn;
         }
 
-        std::cout << "[Connection " << conn_id << "] New connection from "
-                  << peer << std::endl;
+        spdlog::debug("Accepted connection ID({}) from {}", conn_id, peer.to_string());
 
         // Start handling in new thread
         std::thread([this, conn]()
@@ -112,11 +112,10 @@ void GameServer::handleConnection(std::shared_ptr<Connection> conn)
     // Set callbacks
     conn->setMessageCallback([this, conn](const std::string &data)
                              { onMessage(conn, data); });
-
     conn->setDisconnectCallback([this, conn]()
                                 { onDisconnect(conn->getId()); });
 
-    // Start reading (blocks until disconnection)
+    // Start connection
     conn->start();
 }
 
@@ -127,22 +126,21 @@ void GameServer::onMessage(std::shared_ptr<Connection> conn, const std::string &
         // Unwrap message
         auto [type, payload] = MessageSerializer::unwrapMessage(data);
 
-        std::cout << "[Connection " << conn->getId() << "] Received: "
-                  << messageTypeToString(type) << std::endl;
+        spdlog::debug("Received message of type {} from connection ID({})", messageTypeToString(type), conn->getId());
 
         // Route to appropriate handler
         switch (type)
         {
-        case MessageType::CONNECT_REQUEST:
+        case MessageType::REQ_CONNECT:
             handleConnectRequest(conn, payload);
             break;
-        case MessageType::CREATE_GAME:
+        case MessageType::REQ_CREATE_GAME:
             handleCreateGame(conn, payload);
             break;
-        case MessageType::LIST_GAMES:
+        case MessageType::REQ_LIST_GAMES:
             handleListGames(conn, payload);
             break;
-        case MessageType::JOIN_GAME:
+        case MessageType::REQ_JOIN_GAME:
             handleJoinGame(conn, payload);
             break;
         case MessageType::MAKE_MOVE:
@@ -152,56 +150,63 @@ void GameServer::onMessage(std::shared_ptr<Connection> conn, const std::string &
             handleDisconnect(conn, payload);
             break;
         default:
-            sendError(conn, Protocol::ErrorCode::INVALID_MESSAGE,
-                      "Unknown message type");
+            sendError(conn, Protocol::ErrorCode::INVALID_MESSAGE, "Unknown message type");
             break;
         }
     }
     catch (const std::exception &e)
     {
-        std::cerr << "[Connection " << conn->getId() << "] Error processing message: "
-                  << e.what() << std::endl;
+        spdlog::error("Error processing message from connection ID({}): {}", conn->getId(), e.what());
         sendError(conn, Protocol::ErrorCode::INVALID_MESSAGE, "Malformed message");
     }
 }
 
 void GameServer::onDisconnect(uint32_t connection_id)
 {
-    std::cout << "[Connection " << connection_id << "] Disconnected" << std::endl;
+    spdlog::debug("Connection ID({}) disconnected", connection_id);
 
-    // Get session info
+    // Retrieve session
     auto session_opt = session_manager_.getSessionByConnection(connection_id);
+    if (!session_opt.has_value())
+        return;
 
-    if (session_opt.has_value())
+    auto session = session_opt.value();
+    std::shared_ptr<GameSession> game = nullptr;
+
+    // Handle associated game
+    if (session.game_id != 0)
     {
-        auto session = session_opt.value();
-
-        // Remove from game
-        if (session.game_id != 0)
         {
             std::lock_guard<std::mutex> lock(games_mutex_);
             auto it = games_.find(session.game_id);
             if (it != games_.end())
             {
-                it->second->removePlayer(connection_id);
+                game = it->second; // keep shared_ptr alive after unlock
+                spdlog::debug("Player ID({}) removed from game ID({})",
+                              (int)session.player_id, session.game_id);
 
-                std::cout << "[Game " << session.game_id << "] Player "
-                          << (int)session.player_id << " left" << std::endl;
+                game->removePlayer(connection_id);
 
-                // If game is empty, remove it
-                if (it->second->getPlayerCount() == 0)
+                if (game->getPlayerCount() == 0)
                 {
-                    std::cout << "[Game " << session.game_id << "] Removed (empty)"
-                              << std::endl;
-                    games_.erase(it);
+                    spdlog::debug("Game ID({}) removed (empty)", it->first);
                     free_game_ids_.push(it->first);
+                    games_.erase(it);
+                    game.reset();
                 }
             }
         }
 
-        // Remove session
-        session_manager_.removeSession(connection_id);
+        if (game)
+        {
+            spdlog::debug("Broadcasting updated game state for game ID({})", session.game_id);
+            skipAbandonedPlayers(game);
+            broadcastGameState(session.game_id);
+        }
     }
+
+    // Remove session
+    session_manager_.removeSession(connection_id);
 
     // Remove connection
     {
@@ -211,13 +216,11 @@ void GameServer::onDisconnect(uint32_t connection_id)
     }
 }
 
-void GameServer::handleConnectRequest(std::shared_ptr<Connection> conn,
-                                      const std::string &payload)
+void GameServer::handleConnectRequest(std::shared_ptr<Connection> conn, const std::string &payload)
 {
     ConnectRequest req = MessageSerializer::deserializeConnectRequest(payload);
 
-    std::cout << "[Connection " << conn->getId() << "] Player '"
-              << req.player_name << "' connecting..." << std::endl;
+    spdlog::debug("Connection ID({}) requests connection as player '{}'", conn->getId(), req.player_name);
 
     // Create session
     std::string token = session_manager_.createSession(conn->getId(), req.player_name);
@@ -229,20 +232,23 @@ void GameServer::handleConnectRequest(std::shared_ptr<Connection> conn,
     resp.message = "Connected successfully";
 
     std::string respPayload = MessageSerializer::serialize(resp);
-    sendWrappedMessage(conn, MessageType::CONNECT_RESPONSE, respPayload);
+    sendWrappedMessage(conn, MessageType::RES_CONNECT, respPayload);
 }
 
-void GameServer::handleCreateGame(std::shared_ptr<Connection> conn,
-                                  const std::string &payload)
+void GameServer::handleCreateGame(std::shared_ptr<Connection> conn, const std::string &payload)
 {
     CreateGameRequest req = MessageSerializer::deserializeCreateGameRequest(payload);
+
+    spdlog::debug("Connection ID({}) requested new game ('{}')<{}, {}, {}, {}>", conn->getId(), req.game_name,
+                  (int)req.config.rows, (int)req.config.cols, (int)req.config.num_players,
+                  (int)req.config.connect_length);
 
     // Validate token
     auto conn_id_opt = session_manager_.validateToken(req.session_token);
     if (!conn_id_opt.has_value())
     {
-        sendError(conn, Protocol::ErrorCode::INVALID_SESSION_TOKEN,
-                  "Invalid session token");
+        spdlog::debug("Invalid session token from connection ID({})", conn->getId());
+        sendError(conn, Protocol::ErrorCode::INVALID_SESSION_TOKEN, "Invalid session token");
         return;
     }
 
@@ -255,72 +261,45 @@ void GameServer::handleCreateGame(std::shared_ptr<Connection> conn,
                                { return pair.second->getName() == req.game_name; });
         if (it != games_.end())
         {
-            sendError(conn, Protocol::ErrorCode::INVALID_MESSAGE,
-                      "Game name already exists");
+            spdlog::debug("Game name '{}' already exists", req.game_name);
+            sendError(conn, Protocol::ErrorCode::INVALID_MESSAGE, "Game name already exists");
             return;
         }
     }
 
     // Validate config
-    if (req.config.rows < Protocol::MIN_BOARD_SIZE ||
-        req.config.rows > Protocol::MAX_BOARD_SIZE ||
-        req.config.cols < Protocol::MIN_BOARD_SIZE ||
-        req.config.cols > Protocol::MAX_BOARD_SIZE ||
-        req.config.num_players < 2 ||
-        req.config.num_players > Protocol::MAX_PLAYERS)
+    if (req.config.rows < Protocol::MIN_BOARD_SIZE || req.config.rows > Protocol::MAX_BOARD_SIZE ||
+        req.config.cols < Protocol::MIN_BOARD_SIZE || req.config.cols > Protocol::MAX_BOARD_SIZE ||
+        req.config.num_players < 2 || req.config.num_players > Protocol::MAX_PLAYERS)
     {
-        sendError(conn, Protocol::ErrorCode::INVALID_MESSAGE,
-                  "Invalid game configuration");
+        spdlog::debug("Invalid game configuration from connection ID({})", conn->getId());
+        sendError(conn, Protocol::ErrorCode::INVALID_MESSAGE, "Invalid game configuration");
         return;
     }
 
     // Create game
-    uint32_t game_id = createGame(req.config.rows, req.config.cols,
-                                  req.config.num_players,
-                                  req.config.connect_length);
+    uint32_t game_id = createGame(req.config.rows, req.config.cols, req.config.num_players, req.config.connect_length, req.game_name);
 
-    // Set game name
-    if (!req.game_name.empty())
-    {
-        std::lock_guard<std::mutex> lock(games_mutex_);
-        games_[game_id]->setName(req.game_name);
-    }
-
-    // Assign creator to game
-    uint8_t player_id = games_[game_id]->addPlayer(conn->getId());
-    session_manager_.assignToGame(req.session_token, game_id, player_id);
-
-    std::cout << "[Server] Created game " << game_id << "(" << req.game_name << ")"
-                                                                                " with config: "
-              << (int)req.config.rows << "x" << (int)req.config.cols
-              << ", " << (int)req.config.num_players << " players" << std::endl;
+    spdlog::debug("Game ID({}) created by connection ID({})", game_id, conn->getId());
 
     // Send response
     CreateGameResponse resp;
     resp.success = true;
-    resp.assigned_player_id = player_id;
-    resp.game_info = getGameInfo(game_id, games_[game_id]);
+    resp.game_info = getGameInfo(game_id, *games_[game_id]);
     resp.message = "Game created successfully";
 
     std::string respPayload = MessageSerializer::serialize(resp);
-    sendWrappedMessage(conn, MessageType::CREATE_GAME_RESPONSE, respPayload);
+    sendWrappedMessage(conn, MessageType::RES_CREATE_GAME, respPayload);
 
     // Broadcast game state
     broadcastGameState(game_id);
 }
 
-void GameServer::handleListGames(std::shared_ptr<Connection> conn,
-                                 const std::string &payload)
+void GameServer::handleListGames(std::shared_ptr<Connection> conn, const std::string &payload)
 {
     ListGamesRequest req = MessageSerializer::deserializeListGamesRequest(payload);
 
-    // Validate token
-    if (!session_manager_.validateToken(req.session_token).has_value())
-    {
-        sendError(conn, Protocol::ErrorCode::INVALID_SESSION_TOKEN,
-                  "Invalid session token");
-        return;
-    }
+    spdlog::debug("Connection ID({}) requested game list", conn->getId());
 
     ListGamesResponse resp;
 
@@ -329,43 +308,65 @@ void GameServer::handleListGames(std::shared_ptr<Connection> conn,
 
         for (const auto &[id, game] : games_)
         {
-            std::cout << "[Server] Listing game " << id << std::endl;
             GameInfo info;
-            info = getGameInfo(id, game);
+            info = getGameInfo(id, *game);
             resp.games.push_back(info);
-            std::cout << "  - Game " << info.game_id << " ('"
-                      << info.game_name << "'): " << std::endl;
         }
     }
 
-    std::cout << "[Connection " << conn->getId() << "] Sending game list ("
-              << resp.games.size() << " games)" << std::endl;
+    spdlog::debug("Sending game list with {} games to connection ID({})", resp.games.size(), conn->getId());
 
     std::string respPayload = MessageSerializer::serialize(resp);
-    sendWrappedMessage(conn, MessageType::LIST_GAMES_RESPONSE, respPayload);
+    sendWrappedMessage(conn, MessageType::RES_LIST_GAMES, respPayload);
 }
 
-void GameServer::handleJoinGame(std::shared_ptr<Connection> conn,
-                                const std::string &payload)
+void GameServer::handleJoinGame(std::shared_ptr<Connection> conn, const std::string &payload)
 {
     JoinGameRequest req = MessageSerializer::deserializeJoinGameRequest(payload);
+
+    spdlog::debug("Connection ID({}) requests to join game ID({})", conn->getId(), req.game_id);
 
     // Validate token
     auto conn_id_opt = session_manager_.validateToken(req.session_token);
     if (!conn_id_opt.has_value())
     {
-        sendError(conn, Protocol::ErrorCode::INVALID_SESSION_TOKEN,
-                  "Invalid session token");
+        spdlog::debug("Invalid session token from connection ID({})", conn->getId());
+        sendError(conn, Protocol::ErrorCode::INVALID_SESSION_TOKEN, "Invalid session token");
         return;
     }
 
-    // Get game
     std::shared_ptr<GameSession> game;
+    if (req.game_id == 0)
     {
+        // Auto-join: find first available game
+        {
+            std::lock_guard<std::mutex> lock(games_mutex_);
+            for (const auto &[id, g] : games_)
+            {
+                // Need to enforce passkey for private games. For now, just skip named games.
+                if (!g->isFull() && g->getEngine().getState().getStatus() == GameStatus::NOT_STARTED && g->getName().empty())
+                {
+                    game = g;
+                    req.game_id = id;
+                    break;
+                }
+            }
+        }
+        if (!game)
+        {
+            // Create a standard game if none available
+            req.game_id = createGame(6, 7, 2, 4, ""); // Default config
+            game = games_[req.game_id];
+        }
+    }
+    else
+    {
+        // Get game
         std::lock_guard<std::mutex> lock(games_mutex_);
         auto it = games_.find(req.game_id);
         if (it == games_.end())
         {
+            spdlog::debug("Game ID({}) not found for connection ID({})", req.game_id, conn->getId());
             sendError(conn, Protocol::ErrorCode::GAME_NOT_FOUND, "Game not found");
             return;
         }
@@ -375,6 +376,7 @@ void GameServer::handleJoinGame(std::shared_ptr<Connection> conn,
     // Check if game is full
     if (game->isFull())
     {
+        spdlog::debug("Game ID({}) is full for connection ID({})", req.game_id, conn->getId());
         sendError(conn, Protocol::ErrorCode::GAME_FULL, "Game is full");
         return;
     }
@@ -382,8 +384,8 @@ void GameServer::handleJoinGame(std::shared_ptr<Connection> conn,
     // Check if game already started
     if (game->getEngine().getState().getStatus() != GameStatus::NOT_STARTED)
     {
-        sendError(conn, Protocol::ErrorCode::GAME_ALREADY_STARTED,
-                  "Game already started");
+        spdlog::debug("Game ID({}) already started for connection ID({})", req.game_id, conn->getId());
+        sendError(conn, Protocol::ErrorCode::GAME_ALREADY_STARTED, "Game already started");
         return;
     }
 
@@ -391,34 +393,34 @@ void GameServer::handleJoinGame(std::shared_ptr<Connection> conn,
     uint8_t player_id = game->addPlayer(conn->getId());
     session_manager_.assignToGame(req.session_token, req.game_id, player_id);
 
-    std::cout << "[Game " << req.game_id << "] Player " << (int)player_id
-              << " joined" << std::endl;
+    spdlog::debug("Connection ID({}) joined game ID({}) as player ID({})", conn->getId(), req.game_id, (int)player_id);
 
     // Send response
     JoinGameResponse resp;
     resp.success = true;
     resp.assigned_player_id = player_id;
-    resp.game_info = getGameInfo(req.game_id, game);
+    resp.game_info = getGameInfo(req.game_id, *game);
     resp.message = "Joined game successfully";
 
     std::string respPayload = MessageSerializer::serialize(resp);
-    sendWrappedMessage(conn, MessageType::JOIN_GAME_RESPONSE, respPayload);
+    sendWrappedMessage(conn, MessageType::RES_JOIN_GAME, respPayload);
 
     // Broadcast game state
     broadcastGameState(req.game_id);
 }
 
-void GameServer::handleMakeMove(std::shared_ptr<Connection> conn,
-                                const std::string &payload)
+void GameServer::handleMakeMove(std::shared_ptr<Connection> conn, const std::string &payload)
 {
     MakeMoveRequest req = MessageSerializer::deserializeMakeMoveRequest(payload);
+
+    spdlog::debug("Connection ID({}) makes move to column {}", conn->getId(), (int)req.column);
 
     // Validate token
     auto conn_id_opt = session_manager_.validateToken(req.session_token);
     if (!conn_id_opt.has_value() || conn_id_opt.value() != conn->getId())
     {
-        sendError(conn, Protocol::ErrorCode::INVALID_SESSION_TOKEN,
-                  "Invalid session token");
+        spdlog::debug("Invalid session token from connection ID({})", conn->getId());
+        sendError(conn, Protocol::ErrorCode::INVALID_SESSION_TOKEN, "Invalid session token");
         return;
     }
 
@@ -426,6 +428,7 @@ void GameServer::handleMakeMove(std::shared_ptr<Connection> conn,
     auto session_opt = session_manager_.getSessionByConnection(conn->getId());
     if (!session_opt.has_value())
     {
+        spdlog::debug("Session not found for connection ID({})", conn->getId());
         sendError(conn, Protocol::ErrorCode::SESSION_EXPIRED, "Session not found");
         return;
     }
@@ -439,6 +442,7 @@ void GameServer::handleMakeMove(std::shared_ptr<Connection> conn,
         auto it = games_.find(session.game_id);
         if (it == games_.end())
         {
+            spdlog::debug("Game ID({}) not found for connection ID({})", session.game_id, conn->getId());
             sendError(conn, Protocol::ErrorCode::GAME_NOT_FOUND, "Game not found");
             return;
         }
@@ -450,87 +454,49 @@ void GameServer::handleMakeMove(std::shared_ptr<Connection> conn,
 
     if (success)
     {
-        std::cout << "[Game " << session.game_id << "] Player "
-                  << (int)session.player_id << " played column "
-                  << (int)req.column << std::endl;
+        spdlog::debug("Player ID({}) in game ID({}) made move to column {}", (int)session.player_id, session.game_id, (int)req.column);
 
         // Send move result
         MoveResult result(true, "Move successful");
         std::string resultPayload = MessageSerializer::serialize(result);
         sendWrappedMessage(conn, MessageType::MOVE_RESULT, resultPayload);
 
+        // Check if we have to skip some players (in case of abandoned players)
+        skipAbandonedPlayers(game);
+
         // Broadcast updated game state
         broadcastGameState(session.game_id);
-
-        // Check if game is over
-        if (game->getEngine().isGameOver())
-        {
-            GameOverMessage gameOver;
-            gameOver.game_id = session.game_id;
-
-            if (game->getEngine().getState().getStatus() == GameStatus::FINISHED_WIN)
-            {
-                gameOver.final_status = ProtocolGameStatus::FINISHED_WIN;
-                gameOver.winner = game->getEngine().getWinner();
-                gameOver.message = "Player " +
-                                   std::to_string(gameOver.winner.value()) + " wins!";
-
-                std::cout << "[Game " << session.game_id << "] Player "
-                          << (int)gameOver.winner.value() << " wins!" << std::endl;
-            }
-            else
-            {
-                gameOver.final_status = ProtocolGameStatus::FINISHED_DRAW;
-                gameOver.message = "Game ended in a draw!";
-
-                std::cout << "[Game " << session.game_id << "] Draw!" << std::endl;
-            }
-
-            std::string gameOverPayload = MessageSerializer::serialize(gameOver);
-
-            // Send to all players in game
-            for (uint32_t player_conn_id : game->getConnections())
-            {
-                std::lock_guard<std::mutex> lock(connections_mutex_);
-                auto player_it = connections_.find(player_conn_id);
-                if (player_it != connections_.end())
-                {
-                    sendWrappedMessage(player_it->second, MessageType::GAME_OVER,
-                                       gameOverPayload);
-                }
-            }
-        }
     }
     else
     {
-        std::cout << "[Game " << session.game_id << "] Player "
-                  << (int)session.player_id << " invalid move to column "
-                  << (int)req.column << std::endl;
+        spdlog::debug("Invalid move by player ID({}) in game ID({}) to column {}", (int)session.player_id, session.game_id, (int)req.column);
 
         // Determine specific error
         if (game->getEngine().getState().getCurrentPlayer() != session.player_id)
         {
+            spdlog::debug("It's not player ID({})'s turn in game ID({})", (int)session.player_id, session.game_id);
             sendError(conn, Protocol::ErrorCode::NOT_YOUR_TURN, "Not your turn");
         }
         else if (game->getEngine().isGameOver())
         {
+            spdlog::debug("Game ID({}) is already over for player ID({})", session.game_id, (int)session.player_id);
             sendError(conn, Protocol::ErrorCode::GAME_ALREADY_OVER, "Game is over");
         }
         else
         {
-            sendError(conn, Protocol::ErrorCode::INVALID_MOVE,
-                      "Invalid move (column full or out of range)");
+            spdlog::debug("Move to column {} is invalid for player ID({}) in game ID({})", (int)req.column, (int)session.player_id, session.game_id);
+            MoveResult result(false, "Invalid move (column full or out of range)");
+            std::string resultPayload = MessageSerializer::serialize(result);
+            sendWrappedMessage(conn, MessageType::MOVE_RESULT, resultPayload);
         }
     }
 }
 
-void GameServer::handleDisconnect(std::shared_ptr<Connection> conn,
-                                  const std::string &payload)
+void GameServer::handleDisconnect(std::shared_ptr<Connection> conn, const std::string &payload)
 {
     DisconnectMessage msg = MessageSerializer::deserializeDisconnect(payload);
 
-    std::cout << "[Connection " << conn->getId() << "] Disconnect request: "
-              << msg.reason << std::endl;
+    spdlog::debug("Connection ID({}) requests disconnect: {}", conn->getId(), msg.reason);
 
     onDisconnect(conn->getId());
     conn->close();
@@ -540,19 +506,14 @@ void GameServer::handleDisconnect(std::shared_ptr<Connection> conn,
 // Helper Functions
 // ============================================================================
 
-void GameServer::sendError(std::shared_ptr<Connection> conn, uint16_t error_code,
-                           const std::string &message)
+void GameServer::sendError(std::shared_ptr<Connection> conn, uint16_t error_code, const std::string &message)
 {
     ErrorMessage err(error_code, message);
     std::string payload = MessageSerializer::serialize(err);
     sendWrappedMessage(conn, MessageType::ERROR, payload);
-
-    std::cout << "[Connection " << conn->getId() << "] Error sent: "
-              << error_code << " - " << message << std::endl;
 }
 
-void GameServer::sendWrappedMessage(std::shared_ptr<Connection> conn,
-                                    MessageType type, const std::string &payload)
+void GameServer::sendWrappedMessage(std::shared_ptr<Connection> conn, MessageType type, const std::string &payload)
 {
     std::string message = MessageSerializer::wrapMessage(type, payload);
     conn->send(message);
@@ -588,8 +549,8 @@ void GameServer::broadcastGameState(uint32_t game_id)
     }
 }
 
-uint32_t GameServer::createGame(uint8_t rows, uint8_t cols, uint8_t num_players,
-                                uint8_t connect_length)
+uint32_t GameServer::createGame(uint8_t rows, uint8_t cols, uint8_t num_players, uint8_t connect_length,
+                                std::string game_name)
 {
     std::lock_guard<std::mutex> lock(games_mutex_);
 
@@ -604,23 +565,22 @@ uint32_t GameServer::createGame(uint8_t rows, uint8_t cols, uint8_t num_players,
         game_id = games_.empty() ? 1 : (games_.rbegin()->first + 1);
     }
 
-    auto game = std::make_shared<GameSession>(game_id, rows, cols,
-                                              num_players, connect_length);
+    auto game = std::make_shared<GameSession>(game_id, rows, cols, num_players, connect_length, game_name);
 
     games_[game_id] = game;
 
     return game_id;
 }
 
-GameInfo GameServer::getGameInfo(uint32_t game_id, const std::shared_ptr<GameSession> &game)
+GameInfo GameServer::getGameInfo(uint32_t game_id, const GameSession &game)
 {
     GameInfo info;
 
     info.game_id = game_id;
-    info.game_name = game->getName();
-    info.current_players = game->getPlayerCount();
+    info.game_name = game.getName();
+    info.current_players = game.getPlayerCount();
 
-    switch (game->getEngine().getState().getStatus())
+    switch (game.getEngine().getState().getStatus())
     {
     case GameStatus::NOT_STARTED:
         info.status = ProtocolGameStatus::NOT_STARTED;
@@ -636,11 +596,11 @@ GameInfo GameServer::getGameInfo(uint32_t game_id, const std::shared_ptr<GameSes
         break;
     }
 
-    const auto &board = game->getEngine().getState().getBoard();
+    const auto &board = game.getEngine().getState().getBoard();
     info.config.rows = board.getRows();
     info.config.cols = board.getCols();
     info.config.num_players = board.getNumPlayers();
-    info.config.connect_length = game->getEngine().getRules().getConnectLength();
+    info.config.connect_length = game.getEngine().getRules().getConnectLength();
 
     return info;
 }
@@ -690,4 +650,23 @@ GameStateUpdate GameServer::createGameStateUpdate(const GameSession &game)
     }
 
     return update;
+}
+
+void GameServer::skipAbandonedPlayers(const std::shared_ptr<GameSession> &game)
+{
+    std::vector<uint8_t> player_ids;
+    auto connections = game->getConnections();
+    for (uint32_t conn_id : connections)
+    {
+        auto session_opt = session_manager_.getSessionByConnection(conn_id);
+        if (session_opt.has_value())
+        {
+            player_ids.push_back(session_opt->player_id);
+        }
+    }
+    while (std::find(player_ids.begin(), player_ids.end(), game->getEngine().getState().getCurrentPlayer()) == player_ids.end())
+    {
+        spdlog::debug("Skipping abandoned player ID({}) in game ID({})", (int)game->getEngine().getState().getCurrentPlayer(), game->getId());
+        game->getEngine().skipPlayerTurn();
+    }
 }

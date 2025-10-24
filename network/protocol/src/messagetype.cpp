@@ -4,10 +4,10 @@ std::string messageTypeToString(MessageType type)
 {
     switch (type)
     {
-    case MessageType::CONNECT_REQUEST:
-        return "CONNECT_REQUEST";
-    case MessageType::CONNECT_RESPONSE:
-        return "CONNECT_RESPONSE";
+    case MessageType::REQ_CONNECT:
+        return "REQ_CONNECT";
+    case MessageType::RES_CONNECT:
+        return "RES_CONNECT";
     case MessageType::DISCONNECT:
         return "DISCONNECT";
     case MessageType::HEARTBEAT:
@@ -18,16 +18,14 @@ std::string messageTypeToString(MessageType type)
         return "MOVE_RESULT";
     case MessageType::GAME_STATE_UPDATE:
         return "GAME_STATE_UPDATE";
-    case MessageType::GAME_OVER:
-        return "GAME_OVER";
-    case MessageType::CREATE_GAME:
+    case MessageType::REQ_CREATE_GAME:
         return "CREATE_GAME";
-    case MessageType::JOIN_GAME:
-        return "JOIN_GAME";
-    case MessageType::LIST_GAMES:
-        return "LIST_GAMES";
-    case MessageType::LIST_GAMES_RESPONSE:
-        return "LIST_GAMES_RESPONSE";
+    case MessageType::REQ_JOIN_GAME:
+        return "REQ_JOIN_GAME";
+    case MessageType::REQ_LIST_GAMES:
+        return "REQ_LIST_GAMES";
+    case MessageType::RES_LIST_GAMES:
+        return "RES_LIST_GAMES";
     case MessageType::ERROR:
         return "ERROR";
     default:

@@ -33,7 +33,7 @@ void test_callback_registration()
     bool error_called = false;
     bool game_list_called = false;
 
-    client.onConnected([&](uint8_t, uint32_t)
+    client.onConnected([&]()
                        { connected_called = true; });
 
     client.onDisconnected([&]()
@@ -41,9 +41,6 @@ void test_callback_registration()
 
     client.onGameStateUpdate([&](const GameStateUpdate &)
                              { state_update_called = true; });
-
-    client.onGameOver([&](const GameOverMessage &)
-                      { game_over_called = true; });
 
     client.onMoveResult([&](bool, const std::string &)
                         { move_result_called = true; });

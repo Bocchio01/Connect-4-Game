@@ -11,11 +11,11 @@ void test_connect_request_format()
     // Simulate what Client would send
     ConnectRequest req("TestPlayer");
     std::string payload = MessageSerializer::serialize(req);
-    std::string message = MessageSerializer::wrapMessage(MessageType::CONNECT_REQUEST, payload);
+    std::string message = MessageSerializer::wrapMessage(MessageType::REQ_CONNECT, payload);
 
     // Verify it can be unwrapped and deserialized
     auto [type, recv_payload] = MessageSerializer::unwrapMessage(message);
-    assert(type == MessageType::CONNECT_REQUEST);
+    assert(type == MessageType::REQ_CONNECT);
 
     ConnectRequest recv_req = MessageSerializer::deserializeConnectRequest(recv_payload);
     assert(recv_req.player_name == "TestPlayer");
@@ -55,11 +55,11 @@ void test_create_game_format()
     req.config = GameConfig(8, 10, 3, 5);
 
     std::string payload = MessageSerializer::serialize(req);
-    std::string message = MessageSerializer::wrapMessage(MessageType::CREATE_GAME, payload);
+    std::string message = MessageSerializer::wrapMessage(MessageType::REQ_CREATE_GAME, payload);
 
     // Verify
     auto [type, recv_payload] = MessageSerializer::unwrapMessage(message);
-    assert(type == MessageType::CREATE_GAME);
+    assert(type == MessageType::REQ_CREATE_GAME);
 
     CreateGameRequest recv_req = MessageSerializer::deserializeCreateGameRequest(recv_payload);
     assert(recv_req.session_token == "token123");
@@ -77,11 +77,11 @@ void test_join_game_format()
 
     JoinGameRequest req("token456", 42);
     std::string payload = MessageSerializer::serialize(req);
-    std::string message = MessageSerializer::wrapMessage(MessageType::JOIN_GAME, payload);
+    std::string message = MessageSerializer::wrapMessage(MessageType::REQ_JOIN_GAME, payload);
 
     // Verify
     auto [type, recv_payload] = MessageSerializer::unwrapMessage(message);
-    assert(type == MessageType::JOIN_GAME);
+    assert(type == MessageType::REQ_JOIN_GAME);
 
     JoinGameRequest recv_req = MessageSerializer::deserializeJoinGameRequest(recv_payload);
     assert(recv_req.session_token == "token456");
@@ -96,11 +96,11 @@ void test_list_games_format()
 
     ListGamesRequest req("token789");
     std::string payload = MessageSerializer::serialize(req);
-    std::string message = MessageSerializer::wrapMessage(MessageType::LIST_GAMES, payload);
+    std::string message = MessageSerializer::wrapMessage(MessageType::REQ_LIST_GAMES, payload);
 
     // Verify
     auto [type, recv_payload] = MessageSerializer::unwrapMessage(message);
-    assert(type == MessageType::LIST_GAMES);
+    assert(type == MessageType::REQ_LIST_GAMES);
 
     ListGamesRequest recv_req = MessageSerializer::deserializeListGamesRequest(recv_payload);
     assert(recv_req.session_token == "token789");

@@ -21,12 +21,35 @@
 #define CLEAR_COMMAND "clear"
 #endif
 
+// #ifdef _WIN32
+// #include <conio.h>
+// #else
+// #include <sys/ioctl.h>
+// #include <unistd.h>
+// #include <termios.h>
+// #endif
+
+// namespace
+// {
+//     bool isInputAvailable()
+//     {
+// #ifdef _WIN32
+//         return _kbhit();
+// #else
+//         int bytesWaiting;
+//         ioctl(STDIN_FILENO, FIONREAD, &bytesWaiting);
+//         return bytesWaiting > 0;
+// #endif
+//     }
+// }
+
 CLIInterface::CLIInterface()
     : running_(false),
       waiting_for_input_(false),
       server_host_("localhost"),
       server_port_(8080),
       join_mode_(JoinMode::AUTO),
+      request_game_list_(false),
       with_ai_(false)
 {
 }
@@ -45,47 +68,72 @@ int CLIInterface::run(int argc, char *argv[])
     // Parse command line arguments
     parseArguments(argc, argv);
 
-    // Print banner
-    printBanner();
-
     // Setup callbacks
     setupCallbacks();
 
     // Connect to server
-    if (!connectToServer())
+    if (!client_.connect(server_host_, server_port_))
     {
-        std::cerr << "Failed to connect to server" << std::endl;
-        return 1;
+        std::cerr << "Failed to connect to server at "
+                  << server_host_ + ":" + std::to_string(server_port_) << std::endl;
+        return EXIT_FAILURE;
+    }
+
+    // Start event loop in separate thread
+    running_ = true;
+    event_thread_ = std::thread([this]()
+                                { client_.run(); });
+
+    if (request_game_list_)
+    {
+        // Request and print game list, then exit
+        std::atomic<bool> list_received = false;
+
+        client_.onGameList(
+            [&](const std::vector<GameInfo> &games)
+            {
+                printGameList(games);
+                list_received = true;
+                client_.stop();
+            });
+
+        client_.sendListGames();
+
+        // Wait for list
+        auto start = std::chrono::steady_clock::now();
+        while (!list_received &&
+               std::chrono::steady_clock::now() - start < std::chrono::seconds(3))
+        {
+            std::this_thread::sleep_for(std::chrono::milliseconds(100));
+        }
+
+        if (!list_received)
+        {
+            std::cerr << "Failed to get game list" << std::endl;
+            return EXIT_FAILURE;
+        }
+
+        return EXIT_SUCCESS;
     }
 
     // Get player name if not provided
     if (player_name_.empty())
     {
-        std::cout << "\nEnter your name: ";
+        std::cout << "\nEnter your name (default: Player): ";
         std::getline(std::cin, player_name_);
 
         if (player_name_.empty())
-        {
             player_name_ = "Player";
-        }
     }
 
-    // Start event loop in separate thread
-    running_ = true;
-    event_thread_ = std::thread(
-        [this]()
-        { client_.run(); });
-
     // Send connect request
-    std::cout << "Connecting as '" + player_name_ + "'..." << std::endl;
-
     if (!client_.sendConnectRequest(player_name_))
     {
         std::cerr << "Failed to send connect request" << std::endl;
-        return 1;
+        return EXIT_FAILURE;
     }
 
-    // Wait for connection response
+    // Wait for connection response (session token set in callback)
     std::this_thread::sleep_for(std::chrono::milliseconds(500));
 
     // Handle join mode
@@ -111,87 +159,48 @@ void CLIInterface::handleJoinMode()
     switch (join_mode_)
     {
     case JoinMode::AUTO:
-        autoJoinGame();
+        joinGame();
         break;
 
     case JoinMode::BY_ID:
         if (target_game_id_.has_value())
         {
-            joinGameById(target_game_id_.value());
+            joinGame(target_game_id_.value());
         }
         break;
 
     case JoinMode::BY_NAME:
         if (target_game_name_.has_value())
         {
-            joinGameByName(target_game_name_.value());
+            joinGame(target_game_name_.value());
         }
         break;
 
     case JoinMode::CREATE_CUSTOM:
         createCustomGame();
-        break;
-
-    case JoinMode::CREATE_AI:
-        createAIGame();
+        joinGame(client_.getGameId());
         break;
     }
 }
 
-void CLIInterface::autoJoinGame()
+void CLIInterface::joinGame()
 {
-    std::cout << "Looking for available games..." << std::endl;
+    std::cout << "Auto-joining first available game..." << std::endl;
+    client_.sendJoinGame(0); // 0 indicates auto-join
 
-    // Request game list
-    std::atomic<bool> list_received = false;
-    std::vector<GameInfo> available_games;
+    std::this_thread::sleep_for(std::chrono::milliseconds(500));
 
-    client_.onGameList(
-        [&](const std::vector<GameInfo> &games)
-        {
-            available_games = games;
-            list_received = true;
-        });
-
-    client_.sendListGames();
-
-    // Wait for list
-    auto start = std::chrono::steady_clock::now();
-    while (!list_received &&
-           std::chrono::steady_clock::now() - start < std::chrono::seconds(3))
+    auto info = client_.getGameInfo();
+    if (!info.has_value())
     {
-        std::this_thread::sleep_for(std::chrono::milliseconds(100));
+        std::cerr << "Failed to join any game" << std::endl;
+        std::exit(EXIT_FAILURE);
     }
-
-    // Find first game waiting for players and not opened with a name (private)
-    std::optional<uint32_t> target_game;
-    for (const auto &game : available_games)
-    {
-        if (game.current_players < game.config.num_players &&
-            game.status == ProtocolGameStatus::NOT_STARTED &&
-            game.game_name == "")
-        {
-            target_game = game.game_id;
-            break;
-        }
-    }
-
-    if (target_game.has_value())
-    {
-        std::cout << "Joining game " + std::to_string(target_game.value()) << std::endl;
-        client_.sendJoinGame(target_game.value());
-        return;
-    }
-
-    // No available games, create a new one
-    GameConfig config(6, 7, 2, 4);
-    std::cout << "No available games. Creating a new game..." << std::endl;
-    client_.sendCreateGame(config);
 }
 
-void CLIInterface::joinGameById(uint32_t game_id)
+void CLIInterface::joinGame(uint32_t game_id)
 {
-    std::cout << "Joining game ID " + std::to_string(game_id) + "..." << std::endl;
+    std::cout << "Joining game ID(" + std::to_string(game_id) + ") ..." << std::endl;
     client_.sendJoinGame(game_id);
 
     std::this_thread::sleep_for(std::chrono::milliseconds(500));
@@ -200,11 +209,11 @@ void CLIInterface::joinGameById(uint32_t game_id)
     if (!info.has_value() || info->game_id != game_id)
     {
         std::cerr << "Failed to join game ID " + std::to_string(game_id) << std::endl;
-        return;
+        std::exit(EXIT_FAILURE);
     }
 }
 
-void CLIInterface::joinGameByName(const std::string &name)
+void CLIInterface::joinGame(const std::string &name)
 {
     std::cout << "Looking for game '" + name + "'..." << std::endl;
 
@@ -217,7 +226,6 @@ void CLIInterface::joinGameByName(const std::string &name)
         {
             available_games = games;
             list_received = true;
-            printGameList(games);
         });
 
     client_.sendListGames();
@@ -233,7 +241,7 @@ void CLIInterface::joinGameByName(const std::string &name)
     if (!list_received)
     {
         std::cerr << "Failed to get game list" << std::endl;
-        return;
+        std::exit(EXIT_FAILURE);
     }
 
     // Find game by name
@@ -249,16 +257,14 @@ void CLIInterface::joinGameByName(const std::string &name)
         }
     }
 
-    if (target_game.has_value())
-    {
-        std::cout << "Found game! Joining..." << std::endl;
-        client_.sendJoinGame(target_game.value());
-    }
-    else
+    if (!target_game.has_value())
     {
         std::cerr << "Game '" + name + "' not found or full" << std::endl;
-        client_.stop();
+        std::exit(EXIT_FAILURE);
     }
+
+    std::cout << "Found game! Joining..." << std::endl;
+    client_.sendJoinGame(target_game.value());
 }
 
 void CLIInterface::createCustomGame()
@@ -271,57 +277,43 @@ void CLIInterface::createCustomGame()
 
     const auto &spec = custom_game_spec_.value();
 
-    std::cout << "Creating game '" + spec.name + "' (" + std::to_string(spec.rows) + "x" + std::to_string(spec.cols) + ", " + std::to_string(spec.num_players) + " players, " + std::to_string(spec.connect_length) + " to win)..." << std::endl;
+    std::cout << "Creating game: " << spec.name << "<"
+              << (int)spec.rows << ", "
+              << (int)spec.cols << ", "
+              << (int)spec.num_players << ", "
+              << (int)spec.connect_length << "> ..." << std::endl;
 
     GameConfig config(spec.rows, spec.cols, spec.num_players, spec.connect_length);
 
     if (!client_.sendCreateGame(config, spec.name))
     {
         std::cerr << "Failed to create game" << std::endl;
-        return;
+        std::exit(EXIT_FAILURE);
     }
 
     // Wait a bit for response
     std::this_thread::sleep_for(std::chrono::milliseconds(500));
 
-    std::cout << "Game created! Game ID: " + std::to_string(client_.getGameId()) << std::endl;
-    std::cout << "Waiting for " + std::to_string(spec.num_players - 1) + " more players..." << std::endl;
-}
-
-void CLIInterface::createAIGame()
-{
-    std::cout << "Creating game with AI opponent..." << std::endl;
-
-    GameConfig config(6, 7, 2, 4); // Standard game
-
-    if (!client_.sendCreateGame(config))
+    if (client_.getGameInfo().has_value() == false)
     {
         std::cerr << "Failed to create game" << std::endl;
-        return;
+        std::exit(EXIT_FAILURE);
     }
 
-    // Wait for response
-    std::this_thread::sleep_for(std::chrono::milliseconds(500));
-
-    std::cout << "Game created! Game ID: " + std::to_string(client_.getGameId()) << std::endl;
-    std::cout << " AI opponent not yet implemented. Please launch another client manually." << std::endl;
-    std::cout << " Run: ./connectx-cli -g " + std::to_string(client_.getGameId()) << std::endl;
+    std::cout << "Game created successfully!" << std::endl;
+    std::this_thread::sleep_for(std::chrono::seconds(1));
 }
 
 void CLIInterface::setupCallbacks()
 {
-
-    // Connection established
-    client_.onConnected(
-        [this]()
-        { std::cout << "Connected to server" << std::endl; });
-
     // Disconnected
     client_.onDisconnected(
         [this]()
         {
-            std::cout << "\n"
-                      << "Disconnected from server" << std::endl;
+            waiting_for_input_ = false;
+            // std::cout << "\n"
+            //           << "Disconnected from server" << std::endl;
+
             client_.stop();
         });
 
@@ -334,9 +326,8 @@ void CLIInterface::setupCallbacks()
 
             case ProtocolGameStatus::NOT_STARTED:
                 system(CLEAR_COMMAND);
-                std::cout << "\nGame is starting soon..." << std::endl;
-                std::cout << "Enrolled players: " << std::to_string(state.players.size()) << "/" << std::to_string(client_.getGameInfo()->config.num_players) << std::endl;
-                std::cout << "\nPlayers: " << std::endl;
+                std::cout << "Game is starting soon..." << std::endl;
+                std::cout << "Players (" << std::to_string(state.players.size()) << "/" << std::to_string(client_.getGameInfo()->config.num_players) << "):" << std::endl;
                 for (size_t i = 0; i < state.players.size(); ++i)
                 {
                     std::cout << "- " + state.player_names[i] << std::endl;
@@ -372,13 +363,21 @@ void CLIInterface::setupCallbacks()
                 {
                     std::cout << "Player " + state.player_names[state.winner.value() - 1] + " wins!" << std::endl;
                 }
+                std::this_thread::sleep_for(std::chrono::seconds(2));
+                running_ = false;
+                waiting_for_input_ = false;
+                client_.stop();
                 break;
 
             case ProtocolGameStatus::FINISHED_DRAW:
                 system(CLEAR_COMMAND);
                 printBoard(state);
                 std::cout << "It's a DRAW!" << std::endl;
-                return;
+                std::this_thread::sleep_for(std::chrono::seconds(2));
+                running_ = false;
+                waiting_for_input_ = false;
+                client_.stop();
+                break;
             }
         });
 
@@ -388,44 +387,21 @@ void CLIInterface::setupCallbacks()
         {
             if (!success)
             {
-                std::cout << "\nInvalid move: " + message << std::endl;
-                std::cout << "Try again: ";
+                std::cout << "\nTry again: " + message << std::endl;
                 std::cout.flush();
             }
-        });
-
-    // Game over
-    client_.onGameOver(
-        [this](const GameOverMessage &msg)
-        {
-            // Wait a bit then stop
-            std::this_thread::sleep_for(std::chrono::seconds(2));
-            running_ = false;
-            client_.stop();
+            if (client_.isMyTurn())
+            {
+                waiting_for_input_ = true;
+            }
         });
 
     // Error
     client_.onError(
         [this](uint16_t code, const std::string &message)
         {
-            std::cerr << "Server error " + std::to_string(code) + ": " + message << std::endl;
-            if (client_.isMyTurn())
-            {
-                waiting_for_input_ = true;
-            }
+            std::cerr << "Error ID(" + std::to_string(code) + "): " + message << std::endl;
         });
-}
-
-bool CLIInterface::connectToServer()
-{
-    std::cout << "Connecting to " << server_host_ + ":" + std::to_string(server_port_) << "..." << std::endl;
-
-    if (!client_.connect(server_host_, server_port_))
-    {
-        return false;
-    }
-
-    return true;
 }
 
 void CLIInterface::handleUserInput()
@@ -438,8 +414,12 @@ void CLIInterface::handleUserInput()
             continue;
         }
 
-        // TODO CLean the input buffer before taking new input
-        std::cin.clear();
+        // TODO: Clear any leftover input
+        // std::cin.clear();
+        // if (isInputAvailable())
+        // {
+        //     std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+        // }
         std::cout << "Enter column (0-" << (int)(client_.getGameInfo()->config.cols - 1) << "): ";
 
         int column;

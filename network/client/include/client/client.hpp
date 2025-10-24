@@ -21,7 +21,6 @@ public:
     using ConnectedCallback = std::function<void()>;
     using DisconnectedCallback = std::function<void()>;
     using GameStateUpdateCallback = std::function<void(const GameStateUpdate &)>;
-    using GameOverCallback = std::function<void(const GameOverMessage &)>;
     using MoveResultCallback = std::function<void(bool success, const std::string &message)>;
     using ErrorCallback = std::function<void(uint16_t error_code, const std::string &message)>;
     using GameListCallback = std::function<void(const std::vector<GameInfo> &games)>;
@@ -117,11 +116,6 @@ public:
         game_state_callback_ = callback;
     }
 
-    void onGameOver(GameOverCallback callback)
-    {
-        game_over_callback_ = callback;
-    }
-
     void onMoveResult(MoveResultCallback callback)
     {
         move_result_callback_ = callback;
@@ -201,7 +195,6 @@ private:
     ConnectedCallback connected_callback_;
     DisconnectedCallback disconnected_callback_;
     GameStateUpdateCallback game_state_callback_;
-    GameOverCallback game_over_callback_;
     MoveResultCallback move_result_callback_;
     ErrorCallback error_callback_;
     GameListCallback game_list_callback_;
@@ -217,7 +210,6 @@ private:
     void handleCreateGameResponse(const std::string &payload);
     void handleJoinGameResponse(const std::string &payload);
     void handleGameStateUpdate(const std::string &payload);
-    void handleGameOver(const std::string &payload);
     void handleMoveResult(const std::string &payload);
     void handleError(const std::string &payload);
     void handleGameListResponse(const std::string &payload);

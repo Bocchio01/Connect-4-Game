@@ -1,6 +1,8 @@
 #include <iostream>
 #include <cstring>
 
+#include <spdlog/spdlog.h>
+
 #include "protocol/protocol.hpp"
 #include "server/connection.hpp"
 
@@ -38,7 +40,7 @@ void Connection::start()
     }
     catch (const std::exception &e)
     {
-        std::cerr << "[Connection " << id_ << "] Error: " << e.what() << std::endl;
+        spdlog::error("Connection {} error: {}", id_, e.what());
     }
 
     running_ = false;
@@ -85,7 +87,7 @@ std::string Connection::readMessage()
     // Validate message size
     if (length == 0 || length > Protocol::MAX_MESSAGE_SIZE)
     {
-        std::cerr << "[Connection " << id_ << "] Invalid message length: " << length << std::endl;
+        spdlog::error("Connection ID({}): Invalid message length: {}", id_, length);
         return "";
     }
 
@@ -106,7 +108,7 @@ bool Connection::writeMessage(const std::string &message)
     // Validate message size
     if (message.size() > Protocol::MAX_MESSAGE_SIZE)
     {
-        std::cerr << "[Connection " << id_ << "] Message too large: " << message.size() << std::endl;
+        spdlog::error("Connection ID({}): Message too large: {}", id_, message.size());
         return false;
     }
 

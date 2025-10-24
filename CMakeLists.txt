@@ -12,7 +12,6 @@ option(BUILD_GUI "Build GUI client" OFF)
 
 option(BUILD_TESTS "Build test executables" OFF)
 option(BUILD_EXAMPLES "Build example executables" OFF)
-option(ENABLE_LOGGING "Enable spdlog logging" OFF)
 
 option(INSTALL_EXECUTABLES "Install server and CLI executables" OFF)
 
@@ -56,15 +55,13 @@ set(FETCHCONTENT_QUIET OFF)
 set(FETCHCONTENT_UPDATES_DISCONNECTED ON) # Don't update every time
 
 # Declare all dependencies upfront
-if(ENABLE_LOGGING)
-    message(STATUS "Fetching spdlog...")
-    FetchContent_Declare(
-        spdlog
-        GIT_REPOSITORY https://github.com/gabime/spdlog.git
-        GIT_TAG v1.15.3
-        GIT_SHALLOW TRUE
-    )
-endif()
+message(STATUS "Fetching spdlog...")
+FetchContent_Declare(
+    spdlog
+    GIT_REPOSITORY https://github.com/gabime/spdlog.git
+    GIT_TAG v1.16.0
+    GIT_SHALLOW TRUE
+)
 
 if(BUILD_NETWORK)
     message(STATUS "Fetching sockpp...")
@@ -86,10 +83,7 @@ endif()
 
 # Make all declared dependencies available at once
 set(_fetch_deps "")
-
-if(ENABLE_LOGGING)
-    list(APPEND _fetch_deps spdlog)
-endif()
+list(APPEND _fetch_deps spdlog)
 
 if(BUILD_NETWORK)
     list(APPEND _fetch_deps sockpp json)

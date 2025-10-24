@@ -60,6 +60,15 @@ public:
         state_change_callback_ = callback;
     }
 
+    /**
+     * Skip one player's turn
+     */
+    void skipPlayerTurn()
+    {
+        advancePlayer();
+        notifyStateChange();
+    }
+
     // State accessors
     const GameState &getState() const { return state_; }
     const GameRules &getRules() const { return rules_; }

@@ -1,19 +1,18 @@
 #pragma once
 
-#include <vector>
-#include <cstdint>
-#include <string>
-#include <map>
 #include "core/game/engine.hpp"
+#include <cstdint>
+#include <map>
+#include <string>
+#include <vector>
 
 /**
  * Represents a single game instance on the server
  */
-class GameSession
-{
+class GameSession {
 public:
     GameSession(uint32_t id, uint8_t rows, uint8_t cols,
-                uint8_t num_players, uint8_t connect_length);
+        uint8_t num_players, uint8_t connect_length, const std::string& name = "");
 
     /**
      * Get game ID
@@ -23,18 +22,18 @@ public:
     /**
      * Get game name
      */
-    const std::string &getName() const { return name_; }
+    const std::string& getName() const { return name_; }
 
     /**
      * Set game name
      */
-    void setName(const std::string &name) { name_ = name; }
+    void setName(const std::string& name) { name_ = name; }
 
     /**
      * Get game engine
      */
-    GameEngine &getEngine() { return engine_; }
-    const GameEngine &getEngine() const { return engine_; }
+    GameEngine& getEngine() { return engine_; }
+    const GameEngine& getEngine() const { return engine_; }
 
     /**
      * Add a player to this game
@@ -55,7 +54,7 @@ public:
     /**
      * Get all connection IDs in this game
      */
-    const std::vector<uint32_t> &getConnections() const { return connections_; }
+    const std::vector<uint32_t>& getConnections() const { return connections_; }
 
     /**
      * Check if game is full
@@ -76,7 +75,7 @@ private:
     uint32_t id_;
     std::string name_;
     GameEngine engine_;
-    std::vector<uint32_t> connections_;                // connection_id for each player
+    std::vector<uint32_t> connections_; // connection_id for each player
     std::map<uint32_t, uint8_t> connection_to_player_; // connection_id -> player_id
     uint8_t max_players_;
     uint8_t next_player_id_;

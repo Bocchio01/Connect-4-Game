@@ -12,7 +12,6 @@ enum class JoinMode
     BY_ID,         // Join specific game by ID
     BY_NAME,       // Join game by name
     CREATE_CUSTOM, // Create custom game
-    CREATE_AI      // Create game with AI opponent
 };
 
 struct GameSpec
@@ -54,22 +53,21 @@ private:
     std::optional<uint32_t> target_game_id_;
     std::optional<std::string> target_game_name_;
     std::optional<GameSpec> custom_game_spec_;
+    bool request_game_list_;
     bool with_ai_;
 
     // Setup and initialization
     void parseArguments(int argc, char *argv[]);
     bool parseGameSpec(const std::string &spec);
-    void printBanner();
     void setupCallbacks();
-    bool connectToServer();
     void handleJoinMode();
-    void autoJoinGame();
-    void joinGameById(uint32_t game_id);
-    void joinGameByName(const std::string &name);
+    void joinGame();
+    void joinGame(uint32_t game_id);
+    void joinGame(const std::string &name);
     void createCustomGame();
-    void createAIGame();
 
     // Display functions
+    void printBanner();
     void printBoard(const GameStateUpdate &state);
     void printHelp();
     void printGameList(const std::vector<GameInfo> &games);
