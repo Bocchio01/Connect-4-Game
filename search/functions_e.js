@@ -1,0 +1,26 @@
+var searchData=
+[
+  ['send_0',['send',['../classConnection.html#a89f4efa93a0d5485db8195ee9e248701',1,'Connection']]],
+  ['sendconnectrequest_1',['sendConnectRequest',['../classClient.html#a5d836f72b2c0f7d51961e8a653828d2b',1,'Client']]],
+  ['sendcreategame_2',['sendCreateGame',['../classClient.html#ae0eb0a871f0d071e3382f0a0f480ed2f',1,'Client']]],
+  ['senddisconnect_3',['sendDisconnect',['../classClient.html#af973af687f41ff91b424c9a68da07999',1,'Client']]],
+  ['sendjoingame_4',['sendJoinGame',['../classClient.html#af550fa730559732463f74b861f5197c6',1,'Client']]],
+  ['sendlistgames_5',['sendListGames',['../classClient.html#a003717598166d361729325640aad7039',1,'Client']]],
+  ['sendmove_6',['sendMove',['../classClient.html#a5e96b8b45427b801da147536ef197c3a',1,'Client']]],
+  ['serialize_7',['serialize',['../classMessageSerializer.html#a12325b61869c2c356eb304c4c130e497',1,'MessageSerializer::serialize(const ListGamesRequest &amp;msg)'],['../classMessageSerializer.html#a62697019a3205f5e3ec3075e30c6aeda',1,'MessageSerializer::serialize(const ErrorMessage &amp;msg)'],['../classMessageSerializer.html#ac082077723a63cfc6915a0706728539d',1,'MessageSerializer::serialize(const ListGamesResponse &amp;msg)'],['../classMessageSerializer.html#a66f42a2a9bf594bfe74d1de509739d0d',1,'MessageSerializer::serialize(const JoinGameResponse &amp;msg)'],['../classMessageSerializer.html#a264eb24f726d9ab86d3629a0e92c31ad',1,'MessageSerializer::serialize(const JoinGameRequest &amp;msg)'],['../classMessageSerializer.html#a359094b9c5d4319eb4ccfaafe30c08e0',1,'MessageSerializer::serialize(const CreateGameResponse &amp;msg)'],['../classMessageSerializer.html#a8c2b5fcf04b0d9e88580be64fa7a8edd',1,'MessageSerializer::serialize(const CreateGameRequest &amp;msg)'],['../classMessageSerializer.html#a78b948392a18f6a5468619319579ae96',1,'MessageSerializer::serialize(const GameStateUpdate &amp;msg)'],['../classMessageSerializer.html#a8c35818afb8fdb412064b1fb5b71f229',1,'MessageSerializer::serialize(const MoveResult &amp;msg)'],['../classMessageSerializer.html#ad8cfe0dc9ad2f7dd6e61465a41513018',1,'MessageSerializer::serialize(const MakeMoveRequest &amp;msg)'],['../classMessageSerializer.html#aa1ab1339ed58185c3c8d7f42ae46fbb6',1,'MessageSerializer::serialize(const HeartbeatMessage &amp;msg)'],['../classMessageSerializer.html#ad1530ce08def14a59bb026028a870d2b',1,'MessageSerializer::serialize(const DisconnectMessage &amp;msg)'],['../classMessageSerializer.html#ad376ef0733d8495eaab08bb853b0a820',1,'MessageSerializer::serialize(const ConnectResponse &amp;msg)'],['../classMessageSerializer.html#a68594a7ca4f1f2e27f564d8ebba9e206',1,'MessageSerializer::serialize(const ConnectRequest &amp;msg)'],['../classMessageSerializer.html#acada3f273f1986696849a22e4fee7f7b',1,'MessageSerializer::serialize(const GameOverMessage &amp;msg)']]],
+  ['sessionmanager_8',['SessionManager',['../classSessionManager.html#acc0ba9a385a5d78b9602d5ecb0525006',1,'SessionManager']]],
+  ['set_9',['set',['../classBoard.html#a39d74dfc5cab9bfe3d3f183499c57e35',1,'Board']]],
+  ['setcurrentplayer_10',['setCurrentPlayer',['../classGameState.html#a575846b68532660d6111df80871e54ac',1,'GameState']]],
+  ['setdisconnectcallback_11',['setDisconnectCallback',['../classConnection.html#acafa6a0c5156c3df4ecd67dd1ad19be9',1,'Connection']]],
+  ['setmessagecallback_12',['setMessageCallback',['../classConnection.html#a03499a380ee6844585342f2a1b5715ab',1,'Connection']]],
+  ['setname_13',['setName',['../classGameSession.html#ad161fc2e22d24ef42af5e3245a95a07d',1,'GameSession']]],
+  ['setstatechangecallback_14',['setStateChangeCallback',['../classGameEngine.html#aa62c3fc20b245baf7cb27bcf9a77e5e4',1,'GameEngine']]],
+  ['setstatus_15',['setStatus',['../classGameState.html#a2cf9294a1e50489d89294cf02b849b57',1,'GameState']]],
+  ['setuplogger_16',['setupLogger',['../network_2server_2app_2main_8cpp.html#a7a475721f1195fb7bbc92b94f40227d9',1,'main.cpp']]],
+  ['setwinner_17',['setWinner',['../classGameState.html#a32578c6f3e3a22b42f829a92752ac6a5',1,'GameState']]],
+  ['signalhandler_18',['signalHandler',['../network_2server_2app_2main_8cpp.html#ad2e59c7203b3bddc1bc9a2224b52e8e7',1,'main.cpp']]],
+  ['skipplayerturn_19',['skipPlayerTurn',['../classGameEngine.html#a1a12de66ef96b5bf4d25e44a2f7bd63c',1,'GameEngine']]],
+  ['start_20',['start',['../classConnection.html#a47c25a31352a71e2a6902d37fc5fa2ba',1,'Connection::start()'],['../classGameServer.html#af7466450a2b84132d943938a55e04bd6',1,'GameServer::start()']]],
+  ['startgame_21',['startGame',['../classGameEngine.html#ab1e31fd7b85a30d3714fc046ffd22f67',1,'GameEngine']]],
+  ['stop_22',['stop',['../classClient.html#a9e827b82efa67d7e334dcdde36d7ea87',1,'Client::stop()'],['../classGameServer.html#a16c7f95ef643e73b787d7ed8d8ef19dd',1,'GameServer::stop()']]]
+];

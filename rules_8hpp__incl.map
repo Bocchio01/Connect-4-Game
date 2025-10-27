@@ -1,0 +1,13 @@
+<map id="rules.hpp" name="rules.hpp">
+<area shape="rect" id="Node000001" title=" " alt="" coords="91,5,173,31"/>
+<area shape="rect" id="Node000002" title=" " alt="" coords="5,152,72,177"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="114,33,87,53,64,80,51,109,44,139,39,138,46,108,59,77,84,49,111,29"/>
+<area shape="rect" id="Node000003" title=" " alt="" coords="189,152,264,177"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="153,29,180,49,205,77,219,108,226,138,221,139,214,109,200,80,176,53,150,33"/>
+<area shape="rect" id="Node000004" href="$board_8hpp.html" title=" " alt="" coords="73,79,191,104"/>
+<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="135,31,135,65,129,65,129,31"/>
+<area shape="poly" id="edge5_Node000004_Node000002" title=" " alt="" coords="119,106,66,146,63,141,115,102"/>
+<area shape="poly" id="edge6_Node000004_Node000003" title=" " alt="" coords="149,102,202,141,199,146,146,106"/>
+<area shape="rect" id="Node000005" title=" " alt="" coords="101,152,163,177"/>
+<area shape="poly" id="edge4_Node000004_Node000005" title=" " alt="" coords="135,104,135,138,129,138,129,104"/>
+</map>

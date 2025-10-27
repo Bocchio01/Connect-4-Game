@@ -1,0 +1,27 @@
+var searchData=
+[
+  ['parsearguments_0',['parseArguments',['../network_2server_2app_2main_8cpp.html#a737c428fd6418c0b0416b68dfd4872f0',1,'main.cpp']]],
+  ['player1_1',['PLAYER1',['../visual_8hpp.html#aea46f5509ce7da76b9e4a317dc39dae4a8e8478fd786f76ac4c83d5d3e1f267f2',1,'visual.hpp']]],
+  ['player10_2',['PLAYER10',['../visual_8hpp.html#aea46f5509ce7da76b9e4a317dc39dae4abc676ad4073ceeb703d342ee0d04dd25',1,'visual.hpp']]],
+  ['player2_3',['PLAYER2',['../visual_8hpp.html#aea46f5509ce7da76b9e4a317dc39dae4a843a04bf323577f88418d120b31233d1',1,'visual.hpp']]],
+  ['player3_4',['PLAYER3',['../visual_8hpp.html#aea46f5509ce7da76b9e4a317dc39dae4af9fa28d54d2acafbde32c4c2c045309c',1,'visual.hpp']]],
+  ['player4_5',['PLAYER4',['../visual_8hpp.html#aea46f5509ce7da76b9e4a317dc39dae4a1a645d4daaea7ff32ede80651bf493dd',1,'visual.hpp']]],
+  ['player5_6',['PLAYER5',['../visual_8hpp.html#aea46f5509ce7da76b9e4a317dc39dae4a9ca1bdcec60cff6e39585313cf89bc07',1,'visual.hpp']]],
+  ['player6_7',['PLAYER6',['../visual_8hpp.html#aea46f5509ce7da76b9e4a317dc39dae4a1005e8378af50a6fc50eae9e1825dc4b',1,'visual.hpp']]],
+  ['player7_8',['PLAYER7',['../visual_8hpp.html#aea46f5509ce7da76b9e4a317dc39dae4a92a91b69e58e3b5e19cf3c14df087ace',1,'visual.hpp']]],
+  ['player8_9',['PLAYER8',['../visual_8hpp.html#aea46f5509ce7da76b9e4a317dc39dae4a7b42af620d39d325df6a5859d1948d0a',1,'visual.hpp']]],
+  ['player9_10',['PLAYER9',['../visual_8hpp.html#aea46f5509ce7da76b9e4a317dc39dae4a53564f0553196f564304ae81cf809102',1,'visual.hpp']]],
+  ['player_5fid_11',['player_id',['../structClientSession.html#abd5ceb79199f1085d92d0ac9ea95b868',1,'ClientSession::player_id'],['../structMove.html#a4284627529906b1582e47c0225a1bcfd',1,'Move::player_id']]],
+  ['player_5fname_12',['player_name',['../structClientSession.html#adc346881d35bd034a0f4ba4d6ceee054',1,'ClientSession::player_name'],['../structConnectRequest.html#a91a974647c0af619c735ef81ea80af52',1,'ConnectRequest::player_name']]],
+  ['player_5fnames_13',['player_names',['../structGameStateUpdate.html#a970c08cb03c941a6e6fb96ccd32ee7fe',1,'GameStateUpdate']]],
+  ['player_5fvisuals_14',['player_visuals',['../visual_8hpp.html#aa2f77ab996d824f3e4cff0489c6eb5f9',1,'PLAYER_VISUALS:&#160;visual.cpp'],['../visual_8cpp.html#aa2f77ab996d824f3e4cff0489c6eb5f9',1,'PLAYER_VISUALS:&#160;visual.cpp']]],
+  ['players_15',['players',['../structGameStateUpdate.html#a65d5741b0e84c3eeae33242ffb13221a',1,'GameStateUpdate']]],
+  ['playervisual_16',['PlayerVisual',['../structPlayerVisual.html',1,'']]],
+  ['printusage_17',['printUsage',['../network_2server_2app_2main_8cpp.html#a9c6ced4aa533b43ab10262eae9beea91',1,'main.cpp']]],
+  ['protocol_18',['Protocol',['../namespaceProtocol.html',1,'']]],
+  ['protocol_2ehpp_19',['protocol.hpp',['../protocol_8hpp.html',1,'']]],
+  ['protocol_3a_3aerrorcode_20',['ErrorCode',['../namespaceProtocol_1_1ErrorCode.html',1,'Protocol']]],
+  ['protocol_5fversion_21',['protocol_version',['../structConnectRequest.html#acbc7e5d41b487b058b1897386e19e9ec',1,'ConnectRequest']]],
+  ['protocol_5fversion_5fmismatch_22',['PROTOCOL_VERSION_MISMATCH',['../namespaceProtocol_1_1ErrorCode.html#a752cc4ea50698cd2dc4ea43927368fe4',1,'Protocol::ErrorCode']]],
+  ['protocolgamestatus_23',['ProtocolGameStatus',['../messages_8hpp.html#a4b9987d5de67836c55fae6b4610a1812',1,'messages.hpp']]]
+];

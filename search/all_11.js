@@ -1,0 +1,28 @@
+var searchData=
+[
+  ['readme_2emd_0',['README.md',['../README_8md.html',1,'']]],
+  ['reason_1',['reason',['../structDisconnectMessage.html#abcd3375ddb73af60207a8768fe92d2b6',1,'DisconnectMessage']]],
+  ['red_2',['RED',['../namespaceColor.html#aa1c9d41fbb5e4b016b274d665708c35a',1,'Color']]],
+  ['removeplayer_3',['removePlayer',['../classGameSession.html#abd3369624b206a4844c65a0a4fbba781',1,'GameSession']]],
+  ['removesession_4',['removeSession',['../classSessionManager.html#aad35a64cf182821ffa0536e47d27db5b',1,'SessionManager']]],
+  ['removesessionbytoken_5',['removeSessionByToken',['../classSessionManager.html#a7122b7d6420ac52763e22f7dc4ff842a',1,'SessionManager']]],
+  ['req_5fconnect_6',['REQ_CONNECT',['../messagetype_8hpp.html#a1bc3ccf4d567ca83c993c3aaa8124904a2055787f9904504cc7eae1eb0ac135ef',1,'messagetype.hpp']]],
+  ['req_5fcreate_5fgame_7',['REQ_CREATE_GAME',['../messagetype_8hpp.html#a1bc3ccf4d567ca83c993c3aaa8124904a0aa0dd442d937bc349d44efeb82489f9',1,'messagetype.hpp']]],
+  ['req_5fjoin_5fgame_8',['REQ_JOIN_GAME',['../messagetype_8hpp.html#a1bc3ccf4d567ca83c993c3aaa8124904a244a11974592f4fda5d781b8fd7b0b97',1,'messagetype.hpp']]],
+  ['req_5flist_5fgames_9',['REQ_LIST_GAMES',['../messagetype_8hpp.html#a1bc3ccf4d567ca83c993c3aaa8124904ab9a48386efa8fe89b95a5026366788bd',1,'messagetype.hpp']]],
+  ['requestconnect_10',['requestConnect',['../classClient.html#a4bce4fd2c67b43799dba0a9d3260654f',1,'Client']]],
+  ['requestcreategame_11',['requestCreateGame',['../classClient.html#aa0c3191a7daaebd64da0c6d37a952c94',1,'Client']]],
+  ['requestgameslist_12',['requestGamesList',['../classClient.html#a4b3af1604e957c470f2c1daa4362062f',1,'Client']]],
+  ['requestjoingame_13',['requestJoinGame',['../classClient.html#a9cf2f8cbb19b61977502e098c5a79c78',1,'Client']]],
+  ['res_5fconnect_14',['RES_CONNECT',['../messagetype_8hpp.html#a1bc3ccf4d567ca83c993c3aaa8124904a1b55f498a69bfbdfbbbfb15f9e74dd6f',1,'messagetype.hpp']]],
+  ['res_5fcreate_5fgame_15',['RES_CREATE_GAME',['../messagetype_8hpp.html#a1bc3ccf4d567ca83c993c3aaa8124904a5a3be887fda2095555278e2ec47a0fbe',1,'messagetype.hpp']]],
+  ['res_5fjoin_5fgame_16',['RES_JOIN_GAME',['../messagetype_8hpp.html#a1bc3ccf4d567ca83c993c3aaa8124904a0ae8884b00d377ed1c9d3bd9f6448114',1,'messagetype.hpp']]],
+  ['res_5flist_5fgames_17',['RES_LIST_GAMES',['../messagetype_8hpp.html#a1bc3ccf4d567ca83c993c3aaa8124904a1fbc5dcb8093a5205cde093a67070443',1,'messagetype.hpp']]],
+  ['reset_18',['reset',['../classGameState.html#a667c26a355b1b1850cd4a308cc2a337c',1,'GameState::reset()'],['../classGameEngine.html#a559f37095479c7849e672ae9e8de136e',1,'GameEngine::reset()'],['../namespaceColor.html#a411139f66a01e03e8d26bb3e87e5d9ba',1,'Color::RESET']]],
+  ['rows_19',['rows',['../structGameSpec.html#a797842b5bbfcc57d05e599224a4bf96f',1,'GameSpec::rows'],['../structGameConfig.html#a4692e3a64a9599da655a668659432387',1,'GameConfig::rows'],['../structGameStateUpdate.html#a8a6318c8b7bc2bece32861b902b19de3',1,'GameStateUpdate::rows']]],
+  ['rules_2ecpp_20',['rules.cpp',['../rules_8cpp.html',1,'']]],
+  ['rules_2ehpp_21',['rules.hpp',['../rules_8hpp.html',1,'']]],
+  ['run_22',['run',['../classCLIInterface.html#a8b8483c2b563f4e39905555b2b3e069d',1,'CLIInterface::run()'],['../classClient.html#ae0bc335d720265d4d6e8a72cf7a2a9aa',1,'Client::run()']]],
+  ['running_20the_20first_20game_23',['Running the first game',['../index.html#autotoc_md5',1,'']]],
+  ['runserver_24',['runServer',['../network_2server_2app_2main_8cpp.html#a93433a111b94690dda1f4fd04a054959',1,'main.cpp']]]
+];

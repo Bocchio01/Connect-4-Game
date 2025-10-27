@@ -1,0 +1,13 @@
+<map id="connection.hpp" name="connection.hpp">
+<area shape="rect" id="Node000001" title=" " alt="" coords="157,5,278,31"/>
+<area shape="rect" id="Node000002" title=" " alt="" coords="5,79,64,104"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="189,33,78,76,76,71,187,28"/>
+<area shape="rect" id="Node000003" title=" " alt="" coords="88,79,155,104"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="203,33,150,72,147,68,200,29"/>
+<area shape="rect" id="Node000004" title=" " alt="" coords="179,79,256,104"/>
+<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="220,31,220,65,215,65,215,31"/>
+<area shape="rect" id="Node000005" title=" " alt="" coords="281,79,367,104"/>
+<area shape="poly" id="edge4_Node000001_Node000005" title=" " alt="" coords="236,28,297,69,294,73,233,33"/>
+<area shape="rect" id="Node000006" title=" " alt="" coords="391,79,545,104"/>
+<area shape="poly" id="edge5_Node000001_Node000006" title=" " alt="" coords="258,28,415,72,413,77,257,33"/>
+</map>

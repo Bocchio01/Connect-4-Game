@@ -1,0 +1,26 @@
+var searchData=
+[
+  ['magenta_0',['MAGENTA',['../namespaceColor.html#aa6279acd2fcc0747a0ce557f139502de',1,'Color']]],
+  ['main_1',['main',['../ui_2cli_2app_2main_8cpp.html#a0ddf1224851353fc92bfbff6f499fa97',1,'main(int argc, char *argv[]):&#160;main.cpp'],['../network_2server_2app_2main_8cpp.html#a0ddf1224851353fc92bfbff6f499fa97',1,'main(int argc, char *argv[]):&#160;main.cpp']]],
+  ['make_5fmove_2',['MAKE_MOVE',['../messagetype_8hpp.html#a1bc3ccf4d567ca83c993c3aaa8124904aa553f1f0648e0919c87fb78dccb27844',1,'messagetype.hpp']]],
+  ['makemove_3',['makemove',['../classGameEngine.html#a06f9254d3408cc036ab23a380ed0f510',1,'GameEngine::makeMove(uint8_t column)'],['../classGameEngine.html#a6d382864a923b6805e14f5c25cb44a7d',1,'GameEngine::makeMove(uint8_t column, uint8_t player_id)']]],
+  ['makemoverequest_4',['makemoverequest',['../structMakeMoveRequest.html#a0c262b7b3850cad78b0a84eeaecb2686',1,'MakeMoveRequest::MakeMoveRequest()'],['../structMakeMoveRequest.html#ae9e49258bd667c425fd7cffc7b6e18bd',1,'MakeMoveRequest::MakeMoveRequest(const std::string &amp;token, uint8_t col)'],['../structMakeMoveRequest.html',1,'MakeMoveRequest']]],
+  ['max_5fboard_5fsize_5',['MAX_BOARD_SIZE',['../namespaceProtocol.html#a3a2bb9a771140cc0141a6548943c1501',1,'Protocol']]],
+  ['max_5fmessage_5fsize_6',['MAX_MESSAGE_SIZE',['../namespaceProtocol.html#a2fb6403f8cb19675549328d1ca8e83ac',1,'Protocol']]],
+  ['max_5fplayer_5fname_5flength_7',['MAX_PLAYER_NAME_LENGTH',['../namespaceProtocol.html#aaf9f5a2c1a80e174a87855d2b90a166b',1,'Protocol']]],
+  ['max_5fplayers_8',['MAX_PLAYERS',['../namespaceProtocol.html#adb21ac77c49d6f7604f4dab406a05a2d',1,'Protocol']]],
+  ['message_9',['message',['../structGameOverMessage.html#a73f3381341603890fb86fb5481dcdf04',1,'GameOverMessage::message'],['../structJoinGameResponse.html#afe263da3692e47c08cc95652fa600597',1,'JoinGameResponse::message'],['../structCreateGameResponse.html#a83eaf9f57dd3c1269273f49cf72f006e',1,'CreateGameResponse::message'],['../structMoveResult.html#ad56cc35786c65dcb9f4f9db9926101fb',1,'MoveResult::message'],['../structConnectResponse.html#abb8579f59196dc800e1a331a0c043d00',1,'ConnectResponse::message']]],
+  ['messagecallback_10',['MessageCallback',['../classConnection.html#a4b48a77b1f63c870458a1e4b0cf8a563',1,'Connection']]],
+  ['messages_2ehpp_11',['messages.hpp',['../messages_8hpp.html',1,'']]],
+  ['messageserializer_12',['MessageSerializer',['../classMessageSerializer.html',1,'']]],
+  ['messagetype_13',['MessageType',['../messagetype_8hpp.html#a1bc3ccf4d567ca83c993c3aaa8124904',1,'messagetype.hpp']]],
+  ['messagetype_2ecpp_14',['messagetype.cpp',['../messagetype_8cpp.html',1,'']]],
+  ['messagetype_2ehpp_15',['messagetype.hpp',['../messagetype_8hpp.html',1,'']]],
+  ['messagetypetostring_16',['messagetypetostring',['../messagetype_8hpp.html#aa9bdc92b890a85e05bcf64c3e5e7222a',1,'messageTypeToString(MessageType type):&#160;messagetype.cpp'],['../messagetype_8cpp.html#aa9bdc92b890a85e05bcf64c3e5e7222a',1,'messageTypeToString(MessageType type):&#160;messagetype.cpp']]],
+  ['min_5fboard_5fsize_17',['MIN_BOARD_SIZE',['../namespaceProtocol.html#a2db0248e86f8c9d2c974371931533ece',1,'Protocol']]],
+  ['move_18',['move',['../structMove.html#a4b1acc3a67d30c385ad9a6000526393a',1,'Move::Move()'],['../structMove.html#ae4865c84905d5b34597325906e3a358a',1,'Move::Move(uint8_t col, uint8_t player)'],['../structMove.html',1,'Move']]],
+  ['move_2ehpp_19',['move.hpp',['../move_8hpp.html',1,'']]],
+  ['move_5fresult_20',['MOVE_RESULT',['../messagetype_8hpp.html#a1bc3ccf4d567ca83c993c3aaa8124904a73e4392afe1d9ab4c47be5fb8926bdbd',1,'messagetype.hpp']]],
+  ['moveresult_21',['moveresult',['../structMoveResult.html#a5f3ed145e9f21b88c5f5d7ab47f7ca83',1,'MoveResult::MoveResult(bool s, const std::string &amp;msg=&quot;&quot;)'],['../structMoveResult.html#a8de017c637c5221bbb2a3ce001dba795',1,'MoveResult::MoveResult()'],['../structMoveResult.html',1,'MoveResult']]],
+  ['moveresultcallback_22',['MoveResultCallback',['../classClient.html#acb64aab8076fc9917f42ac3eab1efb5a',1,'Client']]]
+];

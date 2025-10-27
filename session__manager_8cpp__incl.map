@@ -1,0 +1,23 @@
+<map id="session_manager.cpp" name="session_manager.cpp">
+<area shape="rect" id="Node000001" title=" " alt="" coords="60,5,223,31"/>
+<area shape="rect" id="Node000002" title=" " alt="" coords="5,79,80,104"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="127,33,71,73,68,68,124,29"/>
+<area shape="rect" id="Node000003" title=" " alt="" coords="104,79,179,104"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="144,31,144,65,139,65,139,31"/>
+<area shape="rect" id="Node000004" href="$session__manager_8hpp.html" title=" " alt="" coords="203,79,411,104"/>
+<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="169,28,268,71,266,76,167,33"/>
+<area shape="rect" id="Node000005" title=" " alt="" coords="11,152,69,177"/>
+<area shape="poly" id="edge4_Node000004_Node000005" title=" " alt="" coords="264,107,83,154,82,149,262,101"/>
+<area shape="rect" id="Node000006" title=" " alt="" coords="93,152,144,177"/>
+<area shape="poly" id="edge5_Node000004_Node000006" title=" " alt="" coords="277,107,158,151,156,146,276,102"/>
+<area shape="rect" id="Node000007" title=" " alt="" coords="168,152,245,177"/>
+<area shape="poly" id="edge6_Node000004_Node000007" title=" " alt="" coords="292,106,236,146,233,142,289,102"/>
+<area shape="rect" id="Node000008" title=" " alt="" coords="269,152,344,177"/>
+<area shape="poly" id="edge7_Node000004_Node000008" title=" " alt="" coords="309,104,309,138,304,138,304,104"/>
+<area shape="rect" id="Node000009" title=" " alt="" coords="368,152,435,177"/>
+<area shape="poly" id="edge8_Node000004_Node000009" title=" " alt="" coords="323,102,376,141,373,146,320,106"/>
+<area shape="rect" id="Node000010" title=" " alt="" coords="459,152,523,177"/>
+<area shape="poly" id="edge9_Node000004_Node000010" title=" " alt="" coords="337,102,449,144,447,149,335,107"/>
+<area shape="rect" id="Node000011" title=" " alt="" coords="547,152,619,177"/>
+<area shape="poly" id="edge10_Node000004_Node000011" title=" " alt="" coords="352,101,534,148,533,153,350,107"/>
+</map>

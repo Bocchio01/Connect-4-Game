@@ -1,0 +1,37 @@
+var hierarchy =
+[
+    [ "Board", "classBoard.html", null ],
+    [ "Client", "classClient.html", null ],
+    [ "ClientSession", "structClientSession.html", null ],
+    [ "CLIInterface", "classCLIInterface.html", null ],
+    [ "ConnectRequest", "structConnectRequest.html", null ],
+    [ "ConnectResponse", "structConnectResponse.html", null ],
+    [ "CreateGameRequest", "structCreateGameRequest.html", null ],
+    [ "CreateGameResponse", "structCreateGameResponse.html", null ],
+    [ "DisconnectMessage", "structDisconnectMessage.html", null ],
+    [ "std::enable_shared_from_this", null, [
+      [ "Connection", "classConnection.html", null ]
+    ] ],
+    [ "ErrorMessage", "structErrorMessage.html", null ],
+    [ "GameConfig", "structGameConfig.html", null ],
+    [ "GameEngine", "classGameEngine.html", null ],
+    [ "GameInfo", "structGameInfo.html", null ],
+    [ "GameOverMessage", "structGameOverMessage.html", null ],
+    [ "GameRules", "classGameRules.html", null ],
+    [ "GameServer", "classGameServer.html", null ],
+    [ "GameSession", "classGameSession.html", null ],
+    [ "GameSpec", "structGameSpec.html", null ],
+    [ "GameState", "classGameState.html", null ],
+    [ "GameStateUpdate", "structGameStateUpdate.html", null ],
+    [ "HeartbeatMessage", "structHeartbeatMessage.html", null ],
+    [ "JoinGameRequest", "structJoinGameRequest.html", null ],
+    [ "JoinGameResponse", "structJoinGameResponse.html", null ],
+    [ "ListGamesRequest", "structListGamesRequest.html", null ],
+    [ "ListGamesResponse", "structListGamesResponse.html", null ],
+    [ "MakeMoveRequest", "structMakeMoveRequest.html", null ],
+    [ "MessageSerializer", "classMessageSerializer.html", null ],
+    [ "Move", "structMove.html", null ],
+    [ "MoveResult", "structMoveResult.html", null ],
+    [ "PlayerVisual", "structPlayerVisual.html", null ],
+    [ "SessionManager", "classSessionManager.html", null ]
+];
