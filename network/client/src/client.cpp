@@ -185,6 +185,93 @@ bool Client::sendDisconnect(const std::string &reason)
     return sendMessage(MessageType::DISCONNECT, payload);
 }
 
+// ===========================================================================
+// Synchronous Requests
+// ===========================================================================
+std::optional<ConnectResponse> Client::requestConnect(const std::string &player_name, int timeout_ms)
+{
+    sendConnectRequest(player_name);
+    auto response = waitForResponse(MessageType::RES_CONNECT, std::chrono::milliseconds(timeout_ms));
+    if (!response)
+        return std::nullopt;
+
+    ConnectResponse resp = MessageSerializer::deserializeConnectResponse(*response);
+    if (resp.success)
+    {
+        {
+            std::lock_guard<std::mutex> lock(state_mutex_);
+            session_token_ = resp.session_token;
+        }
+        spdlog::debug("Connected successfully, session token: {}", session_token_);
+    }
+    else
+        spdlog::error("Connection failed: {}", resp.message);
+
+    return resp;
+}
+
+std::optional<CreateGameResponse> Client::requestCreateGame(const GameConfig &config, const std::string &name, int timeout_ms)
+{
+    sendCreateGame(config, name);
+    auto response = waitForResponse(MessageType::RES_CREATE_GAME, std::chrono::milliseconds(timeout_ms));
+    if (!response)
+        return std::nullopt;
+
+    CreateGameResponse resp = MessageSerializer::deserializeCreateGameResponse(*response);
+    if (resp.success)
+    {
+        {
+            std::lock_guard<std::mutex> lock(state_mutex_);
+            game_info_ = resp.game_info;
+        }
+        spdlog::debug("Game created successfully, game ID: {}", resp.game_info.game_id);
+    }
+    else
+        spdlog::warn("Create game failed: {}", resp.message);
+
+    return resp;
+}
+
+std::optional<ListGamesResponse> Client::requestGamesList(int timeout_ms)
+{
+    sendListGames();
+    auto response = waitForResponse(MessageType::RES_LIST_GAMES, std::chrono::milliseconds(timeout_ms));
+    if (!response)
+        return std::nullopt;
+
+    ListGamesResponse resp = MessageSerializer::deserializeGameListResponse(*response);
+    if (resp.games.size() > 0)
+        spdlog::debug("Received game list response: {} games available", resp.games.size());
+    else
+        spdlog::warn("List games returned no available games");
+
+    return resp;
+}
+
+std::optional<JoinGameResponse> Client::requestJoinGame(uint32_t game_id, int timeout_ms)
+{
+    sendJoinGame(game_id);
+    auto response = waitForResponse(MessageType::RES_JOIN_GAME, std::chrono::milliseconds(timeout_ms));
+    if (!response)
+        return std::nullopt;
+
+    JoinGameResponse resp = MessageSerializer::deserializeJoinGameResponse(*response);
+    if (resp.success)
+    {
+        {
+            std::lock_guard<std::mutex> lock(state_mutex_);
+            game_info_ = resp.game_info;
+            player_id_ = resp.assigned_player_id;
+        }
+        spdlog::debug("Joined game successfully, game ID: {}, assigned player ID: {}",
+                      resp.game_info.game_id, resp.assigned_player_id);
+    }
+    else
+        spdlog::warn("Join game failed: {}", resp.message);
+
+    return resp;
+}
+
 // ============================================================================
 // Internal Methods
 // ============================================================================
@@ -199,6 +286,26 @@ bool Client::sendMessage(MessageType type, const std::string &payload)
 
     std::string message = MessageSerializer::wrapMessage(type, payload);
     return writeMessage(message);
+}
+
+std::optional<std::string> Client::waitForResponse(MessageType type, std::chrono::milliseconds timeout)
+{
+    std::promise<std::string> promise;
+    std::future<std::string> future = promise.get_future();
+
+    {
+        std::lock_guard<std::mutex> lock(promise_mutex_);
+        pending_promises_[type] = std::move(promise);
+    }
+
+    if (future.wait_for(timeout) == std::future_status::ready)
+    {
+        return future.get();
+    }
+
+    std::lock_guard<std::mutex> lock(promise_mutex_);
+    pending_promises_.erase(type);
+    return std::nullopt;
 }
 
 std::string Client::readMessage()
@@ -267,25 +374,21 @@ void Client::processMessage(const std::string &data)
 
         spdlog::debug("Received message of type {}", messageTypeToString(type));
 
+        // Check for pending promise
+        {
+            std::lock_guard<std::mutex> lock(promise_mutex_);
+            auto it = pending_promises_.find(type);
+            if (it != pending_promises_.end())
+            {
+                it->second.set_value(payload);
+                pending_promises_.erase(it);
+                return; // handled via promise
+            }
+        }
+
         // Route to appropriate handler
         switch (type)
         {
-        case MessageType::RES_CONNECT:
-            handleConnectResponse(payload);
-            break;
-
-        case MessageType::RES_CREATE_GAME:
-            handleCreateGameResponse(payload);
-            break;
-
-        case MessageType::RES_JOIN_GAME:
-            handleJoinGameResponse(payload);
-            break;
-
-        case MessageType::RES_LIST_GAMES:
-            handleGameListResponse(payload);
-            break;
-
         case MessageType::GAME_STATE_UPDATE:
             handleGameStateUpdate(payload);
             break;
@@ -312,83 +415,6 @@ void Client::processMessage(const std::string &data)
 // ============================================================================
 // Message Handlers
 // ============================================================================
-
-void Client::handleConnectResponse(const std::string &payload)
-{
-    ConnectResponse resp = MessageSerializer::deserializeConnectResponse(payload);
-
-    if (resp.success)
-    {
-        std::lock_guard<std::mutex> lock(state_mutex_);
-        session_token_ = resp.session_token;
-
-        spdlog::debug("Connected successfully, session token: {}", session_token_);
-
-        if (connected_callback_)
-        {
-            connected_callback_();
-        }
-    }
-    else
-    {
-        spdlog::error("Connection failed: {}", resp.message);
-
-        if (error_callback_)
-        {
-            error_callback_(0, resp.message);
-        }
-    }
-}
-
-void Client::handleCreateGameResponse(const std::string &payload)
-{
-    CreateGameResponse resp = MessageSerializer::deserializeCreateGameResponse(payload);
-
-    if (resp.success)
-    {
-        {
-            std::lock_guard<std::mutex> lock(state_mutex_);
-            game_info_ = resp.game_info;
-        }
-
-        spdlog::debug("Game created successfully, game ID: {}", resp.game_info.game_id);
-    }
-    else
-    {
-        spdlog::warn("Create game failed: {}", resp.message);
-
-        if (error_callback_)
-        {
-            error_callback_(0, resp.message);
-        }
-    }
-}
-
-void Client::handleJoinGameResponse(const std::string &payload)
-{
-    JoinGameResponse resp = MessageSerializer::deserializeJoinGameResponse(payload);
-
-    if (resp.success)
-    {
-        {
-            std::lock_guard<std::mutex> lock(state_mutex_);
-            player_id_ = resp.assigned_player_id;
-            game_info_ = resp.game_info;
-        }
-
-        spdlog::debug("Joined game successfully, game ID: {}, assigned player ID: {}",
-                      resp.game_info.game_id, resp.assigned_player_id);
-    }
-    else
-    {
-        spdlog::warn("Join game failed: {}", resp.message);
-
-        if (error_callback_)
-        {
-            error_callback_(0, resp.message);
-        }
-    }
-}
 
 void Client::handleGameStateUpdate(const std::string &payload)
 {
@@ -429,17 +455,5 @@ void Client::handleError(const std::string &payload)
     if (error_callback_)
     {
         error_callback_(err.error_code, err.error_message);
-    }
-}
-
-void Client::handleGameListResponse(const std::string &payload)
-{
-    ListGamesResponse resp = MessageSerializer::deserializeGameListResponse(payload);
-
-    spdlog::debug("Received game list response: {} games available", resp.games.size());
-
-    if (game_list_callback_)
-    {
-        game_list_callback_(resp.games);
     }
 }

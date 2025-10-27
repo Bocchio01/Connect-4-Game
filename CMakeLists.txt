@@ -1,19 +1,17 @@
 cmake_minimum_required(VERSION 3.16)
-project(Connectx VERSION 0.1 LANGUAGES CXX)
+project(Connectx VERSION 3.0 LANGUAGES CXX)
 
 # =========================================================
 # Build options
 # =========================================================
 option(BUILD_CORE "Build core library" ON)
 option(BUILD_NETWORK "Build network components" ON)
-option(BUILD_AI "Build AI client" OFF)
 option(BUILD_CLI "Build CLI client" ON)
 option(BUILD_GUI "Build GUI client" OFF)
+option(BUILD_AI "Build AI client" OFF)
 
 option(BUILD_TESTS "Build test executables" OFF)
 option(BUILD_EXAMPLES "Build example executables" OFF)
-
-option(INSTALL_EXECUTABLES "Install server and CLI executables" OFF)
 
 option(GENERATE_DOCS "Generate documentation with Doxygen" OFF)
 
@@ -44,6 +42,11 @@ endif()
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
+
+# =========================================================
+# Installation directories
+# =========================================================
+include(GNUInstallDirs)
 
 # =========================================================
 # FetchContent setup (centralized)
@@ -145,11 +148,6 @@ if(BUILD_NETWORK)
     add_subdirectory(network)
 endif()
 
-if(BUILD_AI)
-    message(STATUS "Adding AI client...")
-    add_subdirectory(ai)
-endif()
-
 if(BUILD_CLI)
     message(STATUS "Adding CLI client...")
     add_subdirectory(ui/cli)
@@ -158,6 +156,11 @@ endif()
 if(BUILD_GUI)
     message(STATUS "Adding GUI client...")
     add_subdirectory(ui/gui)
+endif()
+
+if(BUILD_AI)
+    message(STATUS "Adding AI client...")
+    add_subdirectory(ai)
 endif()
 
 # =========================================================
@@ -210,26 +213,30 @@ endif()
 # =========================================================
 message(STATUS "")
 message(STATUS "========================================")
-message(STATUS "  Connect X Configuration")
+message(STATUS "         ConnectX Configuration         ")
 message(STATUS "========================================")
-message(STATUS "  Version: ${PROJECT_VERSION}")
-message(STATUS "  Build type: ${CMAKE_BUILD_TYPE}")
-message(STATUS "  C++ Standard: ${CMAKE_CXX_STANDARD}")
+message(STATUS " Version: ${PROJECT_VERSION}")
+message(STATUS " Build type: ${CMAKE_BUILD_TYPE}")
+message(STATUS " C++ Standard: ${CMAKE_CXX_STANDARD}")
 message(STATUS "")
 message(STATUS "Components:")
-message(STATUS "  Core library:      ${BUILD_CORE}")
-message(STATUS "  Network:           ${BUILD_NETWORK}")
-message(STATUS "  AI client:         ${BUILD_AI}")
-message(STATUS "  CLI client:        ${BUILD_CLI}")
-message(STATUS "  GUI client:        ${BUILD_GUI}")
+message(STATUS " - Core library:      ${BUILD_CORE}")
+message(STATUS " - Network:           ${BUILD_NETWORK}")
+message(STATUS " - CLI client:        ${BUILD_CLI}")
+message(STATUS " - GUI client:        ${BUILD_GUI}")
+message(STATUS " - AI client:         ${BUILD_AI}")
 message(STATUS "")
 message(STATUS "Options:")
-message(STATUS "  Build tests:       ${BUILD_TESTS}")
-message(STATUS "  Build examples:    ${BUILD_EXAMPLES}")
-message(STATUS "  Enable logging:    ${ENABLE_LOGGING}")
+message(STATUS " - Build tests:       ${BUILD_TESTS}")
+message(STATUS " - Build examples:    ${BUILD_EXAMPLES}")
 message(STATUS "")
 message(STATUS "Output:")
-message(STATUS "  Executables:       ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}")
-message(STATUS "  Libraries:         ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}")
+message(STATUS " - Executables:       ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}")
+message(STATUS " - Libraries:         ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}")
+message(STATUS "")
+message(STATUS "Installation dirs:")
+message(STATUS " - Binaries:          ${CMAKE_INSTALL_BINDIR}")
+message(STATUS " - Libraries:         ${CMAKE_INSTALL_LIBDIR}")
+message(STATUS " - Includes:          ${CMAKE_INSTALL_INCLUDEDIR}")
 message(STATUS "========================================")
 message(STATUS "")

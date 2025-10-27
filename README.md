@@ -59,7 +59,7 @@ cmake ..
 cmake --build .
 ```
 
-This will generate the executables for the client and server in the `build` directory.
+This will generate the executables for the client and server in the `build/bin` directory.
 
 ### Running the first game
 
@@ -98,6 +98,30 @@ Then, when starting the client, specify the server address:
 
 Replace `X.X.X.X` with the public IP address of the server and `X` with the port number you configured.
 
+> [!TIP]
+> @DLR, you can find an instance of the server running on the node `rmc-lx0274:8080`.
+> Connect to it using `./connectx-cli --host rmc-lx0274`, or directly modify the constructor of the `CLIInterface` class by replacing the current default `localhost`.
+
+
+## Known issues
+
+The game is overall stable, but there are still some known issues/bugs:
+- **User input handling in CLI**: if the user inputs valid data while waiting for its turn, the input is stored in the input buffer and processed when the turn actually arrives, which leads to unvoluntary moves. A possible solution is to flush the input buffer when the turn starts or going dual-threaded and have a dedicated thread for user input (overkill);
+- **Server disconnection handling**: again, if a client is waiting for user input and the server shut downs, the client will not be able to process the disconnection event until the user inputs something. I guess here the only solution is to go dual-threaded..;
+
+
+## Future improvements
+
+Scalability is a concern, as the server makes intense use of synchronous/blocking calls via `mutexes` to ensure thread safety.
+This is fine for probably handling some dozens of games and few hundreds of concurrent players, but for larger scale deployments, an asynchronous/event-driven architecture would be more appropriate.
+Load testing and profiling will be performed in the future to identify bottlenecks and optimize performance.
+
+As said before, an AI module is planned to allow players to compete against computer-controlled opponents.
+I'm planning to implement all the classic AI algorithms (Minimax, Alpha-Beta pruning, Monte Carlo Tree Search, etc.) and allow users to select the type of AI they want to face.
+Moreover, given that I have in mind some project requiring ML on embedded systems, I would also like to experiment with `TensorFlow` and `TensorFlow Lite` to build a simple neural network capable of playing ConnectX at a decent level.
+
+Of cource, a GUI interface is also planned.
+
 
 ## Contributing
 
@@ -107,6 +131,3 @@ If you want to contribute code, please fork the repository and create a pull req
 Have a nice coding day,
 
 Tommaso :panda_face:
-
-
-

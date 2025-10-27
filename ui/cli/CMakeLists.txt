@@ -35,20 +35,8 @@ set_target_properties(connectx_cli PROPERTIES
 )
 
 # ---------------------------------------------------------
-# Optional logging support (spdlog is fetched in root)
-# ---------------------------------------------------------
-if(ENABLE_LOGGING)
-    target_link_libraries(connectx_cli PRIVATE spdlog::spdlog)
-    target_compile_definitions(connectx_cli PRIVATE ENABLE_LOGGING)
-endif()
-
-# ---------------------------------------------------------
 # Installation (optional, controlled by parent)
 # ---------------------------------------------------------
-if(INSTALL_EXECUTABLES)
-    include(GNUInstallDirs)
-
-    install(TARGETS connectx_cli
-        RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
-    )
-endif()
+install(TARGETS connectx_cli
+    RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+)

@@ -65,23 +65,44 @@ void CLIInterface::printHelp()
     // std::cout << "  connectx-cli --ai" << std::endl;
 }
 
+void CLIInterface::printLobby(const GameStateUpdate &state)
+{
+    system(CLEAR_COMMAND);
+    std::cout << "Game is starting soon..." << std::endl;
+    std::cout << "Players (" << std::to_string(state.players.size()) << "/" << std::to_string(client_.getGameInfo()->config.num_players) << "):" << std::endl;
+    for (size_t i = 0; i < state.players.size(); ++i)
+    {
+        std::cout << "- " + printPlayer(state.players[i], state.player_names[i]) << std::endl;
+    }
+    std::cout << std::endl;
+
+    if (state.players.size() == client_.getGameInfo()->config.num_players)
+    {
+        std::cout << printPlayer(state.current_player, state.player_names[client_.getPlayerIndex(state, state.current_player).value()], true)
+                  << " will start first!" << std::endl;
+    }
+}
+
 void CLIInterface::printBoard(const GameStateUpdate &state)
 {
-    std::cout << "You are playing as: "
-              << colorize(std::string(1, static_cast<char>(PLAYER_VISUALS.at(client_.getPlayerId()).symbol)),
-                          PLAYER_VISUALS.at(client_.getPlayerId()).color)
-              << std::endl;
-
     std::optional<GameInfo> const gameInfo = client_.getGameInfo();
     if (gameInfo.has_value())
     {
-        std::cout << "GameInfo: " << gameInfo->game_name << "<"
-                  << (int)gameInfo->config.rows << ", "
-                  << (int)gameInfo->config.cols << ", "
-                  << (int)gameInfo->config.num_players << ", "
-                  << (int)gameInfo->config.connect_length << ">"
+        std::cout << "Connect " << (int)gameInfo->config.connect_length << " to win!"
                   << std::endl;
     }
+
+    // Print players
+    for (size_t i = 0; i < state.players.size(); ++i)
+    {
+        std::cout << printPlayer(state.players[i], state.player_names[i], state.current_player == state.players[i]);
+
+        if (i < state.players.size() - 1)
+            std::cout << " vs. ";
+        else
+            std::cout << std::endl;
+    }
+
     std::cout << std::endl;
 
     // Rows
@@ -101,7 +122,7 @@ void CLIInterface::printBoard(const GameStateUpdate &state)
     std::cout << std::string(3 * state.cols, '-') << std::endl;
 
     // Column numbers
-    for (uint8_t c = 0; c < state.cols; ++c)
+    for (uint8_t c = 1; c < state.cols + 1; ++c)
     {
         std::cout << " " << std::to_string(c);
         if (c < 10)
@@ -174,6 +195,26 @@ void CLIInterface::printGameList(const std::vector<GameInfo> &games)
     }
 
     std::cout << std::string(55, '=') << "\n";
+}
+
+std::string CLIInterface::printPlayer(uint8_t player_id, const std::string &player_name, bool highlight)
+{
+    PlayerVisual visual = PLAYER_VISUALS.at(player_id);
+    std::string symbol(1, static_cast<char>(visual.symbol));
+    std::string colorized_symbol = colorize(symbol, visual.color);
+
+    bool is_current_user = (player_id == client_.getPlayerId());
+    std::string display_name = is_current_user ? "You" : player_name;
+
+    // Underline if highlight is true
+    if (highlight)
+    {
+        return colorized_symbol + " \033[4m" + display_name + "\033[0m";
+    }
+    else
+    {
+        return colorized_symbol + " " + display_name;
+    }
 }
 
 std::string CLIInterface::colorize(const std::string &text, int color_code)

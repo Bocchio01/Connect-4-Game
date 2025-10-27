@@ -61,10 +61,6 @@ set_target_properties(connectx_server PROPERTIES
 # ---------------------------------------------------------
 # Installation (optional, controlled by parent)
 # ---------------------------------------------------------
-if(INSTALL_EXECUTABLES)
-    include(GNUInstallDirs)
-
-    install(TARGETS connectx_server
-        RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
-    )
-endif()
+install(TARGETS connectx_server
+    RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+)

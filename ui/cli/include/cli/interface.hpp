@@ -41,7 +41,6 @@ public:
 
 private:
     Client client_;
-    std::atomic<bool> running_;
     std::atomic<bool> waiting_for_input_;
     std::thread event_thread_;
 
@@ -55,6 +54,7 @@ private:
     std::optional<GameSpec> custom_game_spec_;
     bool request_game_list_;
     bool with_ai_;
+    bool first_update = true;
 
     // Setup and initialization
     void parseArguments(int argc, char *argv[]);
@@ -68,9 +68,11 @@ private:
 
     // Display functions
     void printBanner();
+    void printLobby(const GameStateUpdate &state);
     void printBoard(const GameStateUpdate &state);
     void printHelp();
     void printGameList(const std::vector<GameInfo> &games);
+    std::string printPlayer(uint8_t player_id, const std::string &player_name, bool highlight = false);
 
     // Input handling
     void handleUserInput();

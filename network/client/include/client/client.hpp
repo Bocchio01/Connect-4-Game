@@ -6,6 +6,7 @@
 #include <atomic>
 #include <mutex>
 #include <optional>
+#include <future>
 #include <sockpp/tcp_connector.h>
 
 #include "protocol/protocol.hpp"
@@ -18,12 +19,10 @@ class Client
 {
 public:
     // Callback types
-    using ConnectedCallback = std::function<void()>;
     using DisconnectedCallback = std::function<void()>;
     using GameStateUpdateCallback = std::function<void(const GameStateUpdate &)>;
     using MoveResultCallback = std::function<void(bool success, const std::string &message)>;
     using ErrorCallback = std::function<void(uint16_t error_code, const std::string &message)>;
-    using GameListCallback = std::function<void(const std::vector<GameInfo> &games)>;
 
     Client();
     ~Client();
@@ -49,6 +48,11 @@ public:
      * Check if connected to server
      */
     bool isConnected() const { return connected_; }
+
+    /**
+     * Check if event loop is running
+     */
+    bool isRunning() const { return running_; }
 
     /**
      * Run the client event loop (blocking)
@@ -97,14 +101,17 @@ public:
      */
     bool sendDisconnect(const std::string &reason = "Client disconnecting");
 
+    // ===========================================================================
+    // Synchronous Requests
+    // ===========================================================================
+    std::optional<ConnectResponse> requestConnect(const std::string &player_name, int timeout_ms = 3000);
+    std::optional<CreateGameResponse> requestCreateGame(const GameConfig &config, const std::string &name = "", int timeout_ms = 3000);
+    std::optional<ListGamesResponse> requestGamesList(int timeout_ms = 3000);
+    std::optional<JoinGameResponse> requestJoinGame(uint32_t game_id, int timeout_ms = 3000);
+
     // ========================================================================
     // Callbacks (set these to handle events)
     // ========================================================================
-
-    void onConnected(ConnectedCallback callback)
-    {
-        connected_callback_ = callback;
-    }
 
     void onDisconnected(DisconnectedCallback callback)
     {
@@ -126,11 +133,6 @@ public:
         error_callback_ = callback;
     }
 
-    void onGameList(GameListCallback callback)
-    {
-        game_list_callback_ = callback;
-    }
-
     // ========================================================================
     // State Accessors
     // ========================================================================
@@ -144,6 +146,16 @@ public:
      * Get assigned player ID
      */
     uint8_t getPlayerId() const { return player_id_; }
+
+    std::optional<uint8_t> getPlayerIndex(const GameStateUpdate &state, uint8_t player_id)
+    {
+        auto it = std::find(state.players.begin(), state.players.end(), player_id);
+        if (it != state.players.end())
+        {
+            return std::distance(state.players.begin(), it);
+        }
+        return std::nullopt;
+    }
 
     /**
      * Get current game info
@@ -191,26 +203,25 @@ private:
     std::optional<GameStateUpdate> current_state_;
     std::mutex state_mutex_;
 
+    // Promise management for responses
+    std::mutex promise_mutex_;
+    std::unordered_map<MessageType, std::promise<std::string>> pending_promises_;
+
     // Callbacks
-    ConnectedCallback connected_callback_;
     DisconnectedCallback disconnected_callback_;
     GameStateUpdateCallback game_state_callback_;
     MoveResultCallback move_result_callback_;
     ErrorCallback error_callback_;
-    GameListCallback game_list_callback_;
 
     // Internal methods
     bool sendMessage(MessageType type, const std::string &payload);
+    std::optional<std::string> waitForResponse(MessageType type, std::chrono::milliseconds timeout);
     std::string readMessage();
     bool writeMessage(const std::string &message);
     void processMessage(const std::string &data);
 
     // Message handlers
-    void handleConnectResponse(const std::string &payload);
-    void handleCreateGameResponse(const std::string &payload);
-    void handleJoinGameResponse(const std::string &payload);
     void handleGameStateUpdate(const std::string &payload);
     void handleMoveResult(const std::string &payload);
     void handleError(const std::string &payload);
-    void handleGameListResponse(const std::string &payload);
 };

@@ -77,7 +77,7 @@ bool CLIInterface::parseGameSpec(const std::string &spec)
     // Format: GameName<rows cols num_players connect_length>
     // Example: MyGame<8 10 3 5>
 
-    std::regex pattern(R"(([^<]+)<(\d+)\s+(\d+)\s+(\d+)\s+(\d+)>)");
+    std::regex pattern(R"(([^<]*)<(\d+)\s+(\d+)\s+(\d+)\s+(\d+)>)");
     std::smatch match;
 
     if (std::regex_match(spec, match, pattern))

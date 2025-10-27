@@ -7,5 +7,14 @@
     },
     "cmake.sourceDirectory": "${workspaceFolder}",
     "cmake.buildDirectory": "${workspaceFolder}/build",
+    "cmake.debugConfig": {
+        "args": [
+            "-n",
+            "CMakeDebugger",
+            "-g",
+            "1"
+        ],
+        "console": "integratedTerminal"
+    }
     // "C_Cpp.clang_format_style": "{BasedOnStyle: LLVM, AllowShortIfStatementsOnASingleLine: AllIfsAndElse, AllowShortLoopsOnASingleLine: true}"
 }
